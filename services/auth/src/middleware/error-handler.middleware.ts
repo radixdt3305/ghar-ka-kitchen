@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/api-error.util.js";
+import { env } from "../config/env.js";
 import mongoose from "mongoose";
 
 export function errorHandler(
@@ -8,14 +9,20 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
+  // Always log the full error in the console for debugging
+  console.error("[ERROR]", err.message);
+  if (env.NODE_ENV !== "production") {
+    console.error(err.stack);
+  }
+
   // Mongoose validation error
   if (err instanceof mongoose.Error.ValidationError) {
     const messages = Object.values(err.errors).map((e) => e.message);
     res.status(400).json({
       success: false,
       message: "Validation failed",
-      data: null,
       errors: messages,
+      data: null,
     });
     return;
   }
@@ -42,11 +49,17 @@ export function errorHandler(
     return;
   }
 
-  // Unexpected errors
-  console.error("Unhandled error:", err);
-  res.status(500).json({
+  // Unexpected errors — show real message in dev, hide in production
+  const statusCode = (err as any).statusCode || 500;
+  const message =
+    env.NODE_ENV !== "production"
+      ? err.message || "Internal server error"
+      : "Internal server error";
+
+  res.status(statusCode).json({
     success: false,
-    message: "Internal server error",
+    message,
+    ...(env.NODE_ENV !== "production" && { stack: err.stack }),
     data: null,
   });
 }

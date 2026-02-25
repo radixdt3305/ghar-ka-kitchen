@@ -5,6 +5,7 @@ import { LoginRequestDto } from "../dtos/request/login.dto.js";
 import { VerifyOtpRequestDto } from "../dtos/request/verify-otp.dto.js";
 import { RefreshTokenRequestDto } from "../dtos/request/refresh-token.dto.js";
 import { ResendOtpRequestDto } from "../dtos/request/resend-otp.dto.js";
+import { SendOtpRequestDto } from "../dtos/request/send-otp.dto.js";
 import { sendSuccess } from "../utils/api-response.util.js";
 
 export const register = async (
@@ -22,6 +23,24 @@ export const login = async (
 ): Promise<void> => {
   const dto = req.body as LoginRequestDto;
   const result = await authService.login(dto);
+  sendSuccess(res, 200, "Login successful", result);
+};
+
+export const sendLoginOtp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const dto = req.body as SendOtpRequestDto;
+  const result = await authService.sendLoginOtp(dto.phone);
+  sendSuccess(res, 200, "OTP sent successfully", result);
+};
+
+export const verifyLoginOtp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { phone, otp } = req.body as { phone: string; otp: string };
+  const result = await authService.verifyLoginOtp(phone, otp);
   sendSuccess(res, 200, "Login successful", result);
 };
 

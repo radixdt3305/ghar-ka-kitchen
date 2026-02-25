@@ -11,6 +11,9 @@ interface EnvConfig {
   OTP_EXPIRY_MINUTES: number;
   CORS_ORIGIN: string;
   NODE_ENV: string;
+  TWILIO_ACCOUNT_SID: string;
+  TWILIO_AUTH_TOKEN: string;
+  TWILIO_FROM_NUMBER: string;
 }
 
 function getEnv(key: string): string {
@@ -19,6 +22,10 @@ function getEnv(key: string): string {
     throw new Error(`Missing required environment variable: ${key}`);
   }
   return value;
+}
+
+function getOptionalEnv(key: string, fallback: string = ""): string {
+  return process.env[key] || fallback;
 }
 
 export const env: EnvConfig = {
@@ -31,4 +38,7 @@ export const env: EnvConfig = {
   OTP_EXPIRY_MINUTES: parseInt(getEnv("OTP_EXPIRY_MINUTES"), 10),
   CORS_ORIGIN: getEnv("CORS_ORIGIN"),
   NODE_ENV: process.env["NODE_ENV"] || "development",
+  TWILIO_ACCOUNT_SID: getOptionalEnv("TWILIO_ACCOUNT_SID"),
+  TWILIO_AUTH_TOKEN: getOptionalEnv("TWILIO_AUTH_TOKEN"),
+  TWILIO_FROM_NUMBER: getOptionalEnv("TWILIO_FROM_NUMBER"),
 };

@@ -5,7 +5,7 @@ import { OtpPurpose } from "../constants/enums.js";
 import { MAX_OTP_ATTEMPTS } from "../constants/app.constants.js";
 
 const OtpSchema = new Schema<IOtpDocument>({
-  email: {
+  identifier: {
     type: String,
     required: true,
     lowercase: true,
@@ -37,7 +37,7 @@ const OtpSchema = new Schema<IOtpDocument>({
 });
 
 // Compound index for efficient lookups
-OtpSchema.index({ email: 1, purpose: 1 });
+OtpSchema.index({ identifier: 1, purpose: 1 });
 
 const Otp = mongoose.model<IOtpDocument>("Otp", OtpSchema);
 export default Otp;

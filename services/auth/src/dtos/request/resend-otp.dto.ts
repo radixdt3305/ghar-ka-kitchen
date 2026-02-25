@@ -1,6 +1,7 @@
 import { OtpPurpose } from "../../constants/enums.js";
 
 export interface ResendOtpRequestDto {
-  email: string;
+  phone?: string;
+  email?: string;
   purpose?: OtpPurpose;
 }
