@@ -7,6 +7,7 @@ import { RefreshTokenRequestDto } from "../dtos/request/refresh-token.dto.js";
 import { ResendOtpRequestDto } from "../dtos/request/resend-otp.dto.js";
 import { SendOtpRequestDto } from "../dtos/request/send-otp.dto.js";
 import { ChangePasswordRequestDto } from "../dtos/request/change-password.dto.js";
+import { UpdateProfileRequestDto } from "../dtos/request/update-profile.dto.js";
 import { sendSuccess } from "../utils/api-response.util.js";
 
 export const register = async (
@@ -80,4 +81,23 @@ export const changePassword = async (
   const dto = req.body as ChangePasswordRequestDto;
   const result = await authService.changePassword(userId, dto);
   sendSuccess(res, 200, "Password changed successfully", result);
+};
+
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const result = await authService.getProfile(userId);
+  sendSuccess(res, 200, "Profile retrieved successfully", result);
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const dto = req.body as UpdateProfileRequestDto;
+  const result = await authService.updateProfile(userId, dto);
+  sendSuccess(res, 200, "Profile updated successfully", result);
 };

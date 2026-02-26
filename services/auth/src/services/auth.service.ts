@@ -279,6 +279,25 @@ export class AuthService {
     return { message: "Password changed successfully" };
   }
 
+  async getProfile(userId: string): Promise<UserResponseDto> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return this.toUserResponseDto(user);
+  }
+
+  async updateProfile(
+    userId: string,
+    dto: { name?: string; email?: string; avatar?: string; address?: string }
+  ): Promise<UserResponseDto> {
+    const user = await userRepository.updateProfile(userId, dto);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return this.toUserResponseDto(user);
+  }
+
   async refreshToken(refreshToken: string): Promise<ITokenPair> {
     return tokenService.refreshTokens(refreshToken);
   }

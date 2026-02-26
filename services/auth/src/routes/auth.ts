@@ -8,6 +8,8 @@ import {
   refreshToken,
   resendOtp,
   changePassword,
+  getProfile,
+  updateProfile,
 } from "../controllers/auth.js";
 import { validate } from "../middleware/validate.middleware.js";
 import {
@@ -398,5 +400,52 @@ router.post(
   validate(validateChangePasswordRequest),
   changePassword
 );
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/profile", authenticate, getProfile);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.put("/profile", authenticate, updateProfile);
 
 export default router;

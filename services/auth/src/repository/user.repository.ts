@@ -35,6 +35,28 @@ export class UserRepository {
     return User.findByIdAndUpdate(userId, { isVerified }, { new: true });
   }
 
+  async updateProfile(
+    userId: string,
+    data: { name?: string; email?: string; avatar?: string; address?: string }
+  ): Promise<IUserDocument | null> {
+    const update: any = {};
+    if (data.name) update.name = data.name;
+    if (data.email) update.email = data.email.toLowerCase();
+    if (data.avatar !== undefined) update.avatar = data.avatar;
+    if (data.address) {
+      update.addresses = [{
+        label: "Home",
+        street: data.address,
+        city: "",
+        pincode: "000000",
+        lat: 0,
+        lng: 0,
+        isDefault: true
+      }];
+    }
+    return User.findByIdAndUpdate(userId, update, { new: true });
+  }
+
   async existsByEmail(email: string): Promise<boolean> {
     const count = await User.countDocuments({ email: email.toLowerCase() });
     return count > 0;
