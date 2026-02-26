@@ -23,7 +23,8 @@
     "mongoose": "^5.13.22",
     "nodemon": "^3.1.11",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.12.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",

@@ -5,6 +5,9 @@ import { LoginRequestDto } from "../dtos/request/login.dto.js";
 import { VerifyOtpRequestDto } from "../dtos/request/verify-otp.dto.js";
 import { RefreshTokenRequestDto } from "../dtos/request/refresh-token.dto.js";
 import { ResendOtpRequestDto } from "../dtos/request/resend-otp.dto.js";
+import { SendOtpRequestDto } from "../dtos/request/send-otp.dto.js";
+import { ChangePasswordRequestDto } from "../dtos/request/change-password.dto.js";
+import { UpdateProfileRequestDto } from "../dtos/request/update-profile.dto.js";
 import { sendSuccess } from "../utils/api-response.util.js";
 
 export const register = async (
@@ -22,6 +25,24 @@ export const login = async (
 ): Promise<void> => {
   const dto = req.body as LoginRequestDto;
   const result = await authService.login(dto);
+  sendSuccess(res, 200, "Login successful", result);
+};
+
+export const sendLoginOtp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const dto = req.body as SendOtpRequestDto;
+  const result = await authService.sendLoginOtp(dto.phone);
+  sendSuccess(res, 200, "OTP sent successfully", result);
+};
+
+export const verifyLoginOtp = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { phone, otp } = req.body as { phone: string; otp: string };
+  const result = await authService.verifyLoginOtp(phone, otp);
   sendSuccess(res, 200, "Login successful", result);
 };
 
@@ -50,4 +71,33 @@ export const resendOtp = async (
   const dto = req.body as ResendOtpRequestDto;
   const result = await authService.resendOtp(dto);
   sendSuccess(res, 200, "OTP resent successfully", result);
+};
+
+export const changePassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const dto = req.body as ChangePasswordRequestDto;
+  const result = await authService.changePassword(userId, dto);
+  sendSuccess(res, 200, "Password changed successfully", result);
+};
+
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const result = await authService.getProfile(userId);
+  sendSuccess(res, 200, "Profile retrieved successfully", result);
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const dto = req.body as UpdateProfileRequestDto;
+  const result = await authService.updateProfile(userId, dto);
+  sendSuccess(res, 200, "Profile updated successfully", result);
 };

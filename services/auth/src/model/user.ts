@@ -51,7 +51,6 @@ const UserSchema = new Schema<IUserDocument>(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters"],
       select: false,
     },
@@ -92,7 +91,7 @@ UserSchema.index({ role: 1 });
 
 // --- Pre-save Hook: Hash password ---
 UserSchema.pre<IUserDocument>("save", async function (next) {
-  if (!this.isModified("password")) {
+  if (!this.password || !this.isModified("password")) {
     return next();
   }
   try {
@@ -109,6 +108,7 @@ UserSchema.methods.comparePassword = async function (
   this: IUserDocument,
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 

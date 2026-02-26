@@ -30,11 +30,14 @@ export function validateRegisterRequest(body: unknown): string[] {
     errors.push("Valid 10-digit Indian phone number is required");
   }
 
-  if (!dto["password"] || typeof dto["password"] !== "string") {
-    errors.push("Password is required");
-  } else {
-    const pwResult = validatePassword(dto["password"]);
-    errors.push(...pwResult.errors);
+  // Password is optional for phone+OTP registration
+  if (dto["password"] !== undefined && dto["password"] !== null) {
+    if (typeof dto["password"] !== "string") {
+      errors.push("Password must be a string");
+    } else {
+      const pwResult = validatePassword(dto["password"]);
+      errors.push(...pwResult.errors);
+    }
   }
 
   if (dto["role"] !== undefined) {
@@ -90,13 +93,57 @@ export function validateLoginRequest(body: unknown): string[] {
   return errors;
 }
 
+export function validateSendOtpRequest(body: unknown): string[] {
+  const errors: string[] = [];
+  const dto = body as Record<string, unknown>;
+
+  if (
+    !dto["phone"] ||
+    typeof dto["phone"] !== "string" ||
+    !isValidPhone(dto["phone"])
+  ) {
+    errors.push("Valid 10-digit Indian phone number is required");
+  }
+
+  return errors;
+}
+
 export function validateVerifyOtpRequest(body: unknown): string[] {
   const errors: string[] = [];
   const dto = body as Record<string, unknown>;
 
-  if (!dto["email"] || typeof dto["email"] !== "string") {
-    errors.push("Email is required");
+  const hasPhone =
+    dto["phone"] && typeof dto["phone"] === "string" && isValidPhone(dto["phone"]);
+  const hasEmail =
+    dto["email"] && typeof dto["email"] === "string" && isValidEmail(dto["email"]);
+
+  if (!hasPhone && !hasEmail) {
+    errors.push("Valid phone number or email is required");
   }
+
+  if (
+    !dto["otp"] ||
+    typeof dto["otp"] !== "string" ||
+    dto["otp"].length !== 6
+  ) {
+    errors.push("Valid 6-digit OTP is required");
+  }
+
+  return errors;
+}
+
+export function validateVerifyLoginOtpRequest(body: unknown): string[] {
+  const errors: string[] = [];
+  const dto = body as Record<string, unknown>;
+
+  if (
+    !dto["phone"] ||
+    typeof dto["phone"] !== "string" ||
+    !isValidPhone(dto["phone"])
+  ) {
+    errors.push("Valid 10-digit Indian phone number is required");
+  }
+
   if (
     !dto["otp"] ||
     typeof dto["otp"] !== "string" ||
@@ -119,16 +166,35 @@ export function validateRefreshTokenRequest(body: unknown): string[] {
   return errors;
 }
 
+export function validateChangePasswordRequest(body: unknown): string[] {
+  const errors: string[] = [];
+  const dto = body as Record<string, unknown>;
+
+  if (!dto["currentPassword"] || typeof dto["currentPassword"] !== "string") {
+    errors.push("Current password is required");
+  }
+
+  if (!dto["newPassword"] || typeof dto["newPassword"] !== "string") {
+    errors.push("New password is required");
+  } else {
+    const pwResult = validatePassword(dto["newPassword"]);
+    errors.push(...pwResult.errors);
+  }
+
+  return errors;
+}
+
 export function validateResendOtpRequest(body: unknown): string[] {
   const errors: string[] = [];
   const dto = body as Record<string, unknown>;
 
-  if (
-    !dto["email"] ||
-    typeof dto["email"] !== "string" ||
-    !isValidEmail(dto["email"])
-  ) {
-    errors.push("Valid email is required");
+  const hasPhone =
+    dto["phone"] && typeof dto["phone"] === "string" && isValidPhone(dto["phone"]);
+  const hasEmail =
+    dto["email"] && typeof dto["email"] === "string" && isValidEmail(dto["email"]);
+
+  if (!hasPhone && !hasEmail) {
+    errors.push("Valid phone number or email is required");
   }
 
   if (dto["purpose"] !== undefined) {

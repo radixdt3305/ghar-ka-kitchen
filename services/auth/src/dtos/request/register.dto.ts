@@ -5,7 +5,7 @@ export interface RegisterRequestDto {
   name: string;
   email: string;
   phone: string;
-  password: string;
+  password?: string;
   role?: UserRole;
   addresses?: IAddress[];
 }

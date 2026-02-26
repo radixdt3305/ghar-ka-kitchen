@@ -4,15 +4,15 @@ import { OtpPurpose } from "../constants/enums.js";
 
 export class OtpRepository {
   async create(
-    email: string,
+    identifier: string,
     hashedOtp: string,
     purpose: OtpPurpose,
     expiresAt: Date
   ): Promise<IOtpDocument> {
-    // Delete any existing OTP for this email+purpose before creating new
-    await Otp.deleteMany({ email: email.toLowerCase(), purpose });
+    // Delete any existing OTP for this identifier+purpose before creating new
+    await Otp.deleteMany({ identifier: identifier.toLowerCase(), purpose });
     const otp = new Otp({
-      email: email.toLowerCase(),
+      identifier: identifier.toLowerCase(),
       otp: hashedOtp,
       purpose,
       expiresAt,
@@ -21,11 +21,11 @@ export class OtpRepository {
   }
 
   async findLatest(
-    email: string,
+    identifier: string,
     purpose: OtpPurpose
   ): Promise<IOtpDocument | null> {
     return Otp.findOne({
-      email: email.toLowerCase(),
+      identifier: identifier.toLowerCase(),
       purpose,
       expiresAt: { $gt: new Date() },
     }).sort({ createdAt: -1 });
@@ -35,11 +35,11 @@ export class OtpRepository {
     await Otp.findByIdAndUpdate(id, { $inc: { attempts: 1 } });
   }
 
-  async deleteByEmailAndPurpose(
-    email: string,
+  async deleteByIdentifierAndPurpose(
+    identifier: string,
     purpose: OtpPurpose
   ): Promise<void> {
-    await Otp.deleteMany({ email: email.toLowerCase(), purpose });
+    await Otp.deleteMany({ identifier: identifier.toLowerCase(), purpose });
   }
 }
 
