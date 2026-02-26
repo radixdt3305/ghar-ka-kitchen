@@ -57,7 +57,7 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="admin@gharkakitchen.com"
+                  placeholder="you@example.com"
                   {...field}
                 />
               </FormControl>

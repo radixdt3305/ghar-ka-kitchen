@@ -166,6 +166,24 @@ export function validateRefreshTokenRequest(body: unknown): string[] {
   return errors;
 }
 
+export function validateChangePasswordRequest(body: unknown): string[] {
+  const errors: string[] = [];
+  const dto = body as Record<string, unknown>;
+
+  if (!dto["currentPassword"] || typeof dto["currentPassword"] !== "string") {
+    errors.push("Current password is required");
+  }
+
+  if (!dto["newPassword"] || typeof dto["newPassword"] !== "string") {
+    errors.push("New password is required");
+  } else {
+    const pwResult = validatePassword(dto["newPassword"]);
+    errors.push(...pwResult.errors);
+  }
+
+  return errors;
+}
+
 export function validateResendOtpRequest(body: unknown): string[] {
   const errors: string[] = [];
   const dto = body as Record<string, unknown>;

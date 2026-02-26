@@ -6,6 +6,7 @@ import { VerifyOtpRequestDto } from "../dtos/request/verify-otp.dto.js";
 import { RefreshTokenRequestDto } from "../dtos/request/refresh-token.dto.js";
 import { ResendOtpRequestDto } from "../dtos/request/resend-otp.dto.js";
 import { SendOtpRequestDto } from "../dtos/request/send-otp.dto.js";
+import { ChangePasswordRequestDto } from "../dtos/request/change-password.dto.js";
 import { sendSuccess } from "../utils/api-response.util.js";
 
 export const register = async (
@@ -69,4 +70,14 @@ export const resendOtp = async (
   const dto = req.body as ResendOtpRequestDto;
   const result = await authService.resendOtp(dto);
   sendSuccess(res, 200, "OTP resent successfully", result);
+};
+
+export const changePassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const dto = req.body as ChangePasswordRequestDto;
+  const result = await authService.changePassword(userId, dto);
+  sendSuccess(res, 200, "Password changed successfully", result);
 };

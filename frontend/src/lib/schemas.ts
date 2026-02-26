@@ -44,7 +44,26 @@ export const registerSchema = z.object({
   role: z.enum(["buyer", "cook", "admin", "delivery"]).default("buyer"),
 });
 
+export const profileUpdateSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: emailSchema,
+  address: z.string().optional(),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export type SendOtpFormData = z.infer<typeof sendOtpSchema>;
 export type VerifyOtpFormData = z.infer<typeof verifyOtpSchema>;
 export type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

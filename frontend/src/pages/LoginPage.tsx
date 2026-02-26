@@ -38,17 +38,17 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-2xl font-bold text-orange-500">
             Ghar Ka Kitchen
           </CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="phone">
+          <Tabs defaultValue="phone" onValueChange={() => setStep("phone")}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="phone">Phone + OTP</TabsTrigger>
-              <TabsTrigger value="admin">Admin Login</TabsTrigger>
+              <TabsTrigger value="phone">Phone OTP</TabsTrigger>
+              <TabsTrigger value="email">Email & Password</TabsTrigger>
             </TabsList>
 
             <TabsContent value="phone" className="mt-4">
@@ -65,7 +65,7 @@ export function LoginPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="admin" className="mt-4">
+            <TabsContent value="email" className="mt-4">
               <AdminLoginForm onSuccess={handleAuthSuccess} />
             </TabsContent>
           </Tabs>

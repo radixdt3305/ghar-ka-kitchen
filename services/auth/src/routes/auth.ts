@@ -7,6 +7,7 @@ import {
   verifyOtp,
   refreshToken,
   resendOtp,
+  changePassword,
 } from "../controllers/auth.js";
 import { validate } from "../middleware/validate.middleware.js";
 import {
@@ -17,7 +18,9 @@ import {
   validateVerifyLoginOtpRequest,
   validateRefreshTokenRequest,
   validateResendOtpRequest,
+  validateChangePasswordRequest,
 } from "../validators/auth.validator.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -352,6 +355,48 @@ router.post(
   "/refresh-token",
   validate(validateRefreshTokenRequest),
   refreshToken
+);
+
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     description: |
+ *       Requires authentication. User provides current password and new password.
+ *       For phone-only users (no password set), current password is ignored and the new password is set directly.
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: "OldPass@123"
+ *               newPassword:
+ *                 type: string
+ *                 example: "NewPass@456"
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid current password or validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+router.post(
+  "/change-password",
+  authenticate,
+  validate(validateChangePasswordRequest),
+  changePassword
 );
 
 export default router;

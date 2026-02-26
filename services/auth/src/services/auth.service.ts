@@ -5,6 +5,7 @@ import { RegisterRequestDto } from "../dtos/request/register.dto.js";
 import { LoginRequestDto } from "../dtos/request/login.dto.js";
 import { VerifyOtpRequestDto } from "../dtos/request/verify-otp.dto.js";
 import { ResendOtpRequestDto } from "../dtos/request/resend-otp.dto.js";
+import { ChangePasswordRequestDto } from "../dtos/request/change-password.dto.js";
 import {
   AuthResponseDto,
   UserResponseDto,
@@ -238,6 +239,44 @@ export class AuthService {
     }
 
     return response;
+  }
+
+  /**
+   * Change password for an authenticated user.
+   */
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordRequestDto
+  ): Promise<{ message: string }> {
+    const user = await userRepository.findByIdWithPassword(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    // If user has no password (phone-only), set one directly
+    if (!user.password) {
+      user.password = dto.newPassword;
+      await user.save();
+      return { message: "Password set successfully" };
+    }
+
+    const isMatch = await user.comparePassword(dto.currentPassword);
+    if (!isMatch) {
+      throw new AppError("Current password is incorrect", 400);
+    }
+
+    const isSame = await user.comparePassword(dto.newPassword);
+    if (isSame) {
+      throw new AppError(
+        "New password must be different from current password",
+        400
+      );
+    }
+
+    user.password = dto.newPassword;
+    await user.save();
+
+    return { message: "Password changed successfully" };
   }
 
   async refreshToken(refreshToken: string): Promise<ITokenPair> {

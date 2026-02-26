@@ -19,6 +19,10 @@ export class UserRepository {
     return User.findById(id);
   }
 
+  async findByIdWithPassword(id: string): Promise<IUserDocument | null> {
+    return User.findById(id).select("+password");
+  }
+
   async create(data: RegisterRequestDto): Promise<IUserDocument> {
     const user = new User(data);
     return user.save();
