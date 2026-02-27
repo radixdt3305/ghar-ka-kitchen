@@ -42,3 +42,14 @@ export const getNearbyKitchens = async (req: Request, res: Response) => {
   );
   sendSuccess(res, 200, "Nearby kitchens retrieved", result);
 };
+
+export const searchKitchens = async (req: Request, res: Response) => {
+  const result = await kitchenService.searchKitchens(req.query);
+  sendSuccess(res, 200, "Kitchens retrieved", result);
+};
+
+export const getKitchenById = async (req: Request, res: Response) => {
+  const { kitchenId } = req.params;
+  const result = await kitchenService.getKitchenById(kitchenId);
+  sendSuccess(res, 200, "Kitchen retrieved", result);
+};

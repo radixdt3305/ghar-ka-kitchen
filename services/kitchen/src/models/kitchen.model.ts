@@ -36,6 +36,9 @@ const KitchenSchema = new Schema<IKitchenDocument>(
       default: KitchenStatus.PENDING,
     },
     fssaiLicense: { type: String },
+    rating: { type: Number, default: 0, min: 0, max: 5 },
+    totalRatings: { type: Number, default: 0 },
+    totalOrders: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
@@ -44,6 +47,8 @@ const KitchenSchema = new Schema<IKitchenDocument>(
 // 2dsphere index for geospatial queries
 KitchenSchema.index({ location: "2dsphere" });
 KitchenSchema.index({ cookId: 1, isActive: 1 });
+KitchenSchema.index({ rating: -1 });
+KitchenSchema.index({ totalOrders: -1 });
 
 const Kitchen = mongoose.model<IKitchenDocument>("Kitchen", KitchenSchema);
 export default Kitchen;

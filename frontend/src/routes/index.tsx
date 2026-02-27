@@ -3,6 +3,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { HomePage } from "@/pages/HomePage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { DiscoveryPage } from "@/pages/DiscoveryPage";
 import { CookDashboard } from "@/pages/cook/CookDashboard";
 import { KitchenSetup } from "@/pages/cook/KitchenSetup";
 import { MenuCreate } from "@/pages/cook/MenuCreate";
@@ -22,6 +23,7 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/discover" element={<DiscoveryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/cook/dashboard" element={<CookDashboard />} />
             <Route path="/cook/kitchen-setup" element={<KitchenSetup />} />

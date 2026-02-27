@@ -5,6 +5,8 @@ import type {
   CreateKitchenRequest,
   Menu,
   CreateMenuRequest,
+  KitchenWithMenu,
+  DishWithKitchen,
 } from "@/types/kitchen.types";
 
 const KITCHEN_BASE = "http://localhost:5001/api/kitchens";
@@ -40,4 +42,27 @@ export const kitchenApi = {
     api.post<ApiResponse<Menu>>(
       `${KITCHEN_BASE}/${kitchenId}/menus/copy-yesterday`
     ),
+
+  // Discovery endpoints
+  searchKitchens: (params: any) =>
+    api.get<ApiResponse<Kitchen[]>>(`${KITCHEN_BASE}/search`, { params }),
+
+  getNearbyKitchens: (lng: number, lat: number, maxDistance?: number) =>
+    api.get<ApiResponse<Kitchen[]>>(`${KITCHEN_BASE}/nearby`, {
+      params: { lng, lat, maxDistance },
+    }),
+
+  getKitchenById: (kitchenId: string) =>
+    api.get<ApiResponse<Kitchen>>(`${KITCHEN_BASE}/${kitchenId}`),
+
+  getTodayMenus: (lng?: number, lat?: number, maxDistance?: number) =>
+    api.get<ApiResponse<any[]>>(`${KITCHEN_BASE}/menus/today`, {
+      params: { lng, lat, maxDistance },
+    }),
+
+  searchDishes: (params: any) =>
+    api.get<ApiResponse<any[]>>(`${KITCHEN_BASE}/dishes/search`, { params }),
+
+  getTrendingDishes: (params?: any) =>
+    api.get<ApiResponse<any[]>>(`${KITCHEN_BASE}/dishes/trending`, { params }),
 };

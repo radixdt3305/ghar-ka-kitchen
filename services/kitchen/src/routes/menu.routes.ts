@@ -171,4 +171,99 @@ router.patch("/menus/:menuId/dishes/:dishId/status", authenticate, authorize(Use
  */
 router.post("/:kitchenId/menus/copy-yesterday", authenticate, authorize(UserRole.COOK), asyncHandler(menuController.copyYesterdayMenu));
 
+/**
+ * @swagger
+ * /api/kitchens/menus/today:
+ *   get:
+ *     summary: Get today's menus from nearby kitchens
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: query
+ *         name: lng
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: lat
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Today's menus retrieved
+ */
+router.get("/menus/today", asyncHandler(menuController.getTodayMenus));
+
+/**
+ * @swagger
+ * /api/kitchens/dishes/search:
+ *   get:
+ *     summary: Search dishes with filters
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: lng
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: lat
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Dishes retrieved
+ */
+router.get("/dishes/search", asyncHandler(menuController.searchDishes));
+
+/**
+ * @swagger
+ * /api/kitchens/dishes/trending:
+ *   get:
+ *     summary: Get trending dishes in your area
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: query
+ *         name: lng
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: lat
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Trending dishes retrieved
+ */
+router.get("/dishes/trending", asyncHandler(menuController.getTrendingDishes));
+
 export default router;

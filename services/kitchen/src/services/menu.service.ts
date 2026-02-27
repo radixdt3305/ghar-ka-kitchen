@@ -79,6 +79,34 @@ export class MenuService {
 
     return menuRepository.copyMenu(String(yesterdayMenu._id), today, kitchenId);
   }
+
+  async getTodayMenus(lng?: number, lat?: number, maxDistance?: number) {
+    return menuRepository.findTodayMenus(lng, lat, maxDistance);
+  }
+
+  async searchDishes(filters: any) {
+    const { query, category, dietType, minPrice, maxPrice, lng, lat, maxDistance, sortBy } = filters;
+    return menuRepository.searchDishes({
+      query,
+      category,
+      dietType,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      lng: lng ? Number(lng) : undefined,
+      lat: lat ? Number(lat) : undefined,
+      maxDistance: maxDistance ? Number(maxDistance) : undefined,
+      sortBy,
+    });
+  }
+
+  async getTrendingDishes(lng?: number, lat?: number, maxDistance?: number, limit?: number) {
+    return menuRepository.getTrendingDishes(
+      lng ? Number(lng) : undefined,
+      lat ? Number(lat) : undefined,
+      maxDistance ? Number(maxDistance) : undefined,
+      limit ? Number(limit) : 10
+    );
+  }
 }
 
 export const menuService = new MenuService();
