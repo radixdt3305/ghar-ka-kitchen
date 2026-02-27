@@ -17,6 +17,9 @@ export interface Kitchen {
   cuisines: string[];
   status: "pending" | "approved" | "rejected" | "suspended";
   fssaiLicense?: string;
+  rating: number;
+  totalRatings: number;
+  totalOrders: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -50,11 +53,14 @@ export interface Menu {
   updatedAt: string;
 }
 
+export type DietType = "veg" | "non_veg" | "vegan" | "egg";
+
 export interface Dish {
   _id: string;
   name: string;
   description: string;
   category: "breakfast" | "lunch" | "dinner" | "snacks" | "dessert" | "beverages";
+  dietType: DietType;
   price: number;
   photos: string[];
   quantity: number;
@@ -65,4 +71,16 @@ export interface Dish {
 export interface CreateMenuRequest {
   date: string;
   dishes: Omit<Dish, "_id">[];
+}
+
+export interface KitchenWithMenu extends Kitchen {
+  menu?: Menu;
+  distance?: number;
+}
+
+export interface DishWithKitchen {
+  dish: Dish;
+  kitchen: Kitchen;
+  menuId: string;
+  distance?: number;
 }

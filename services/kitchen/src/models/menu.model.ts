@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 import { IMenuDocument } from "../interfaces/menu.interface.js";
-import { DishCategory, MenuStatus } from "../constants/enums.js";
+import { DishCategory, DietType, MenuStatus } from "../constants/enums.js";
 
 const DishSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
     category: { type: String, enum: Object.values(DishCategory), required: true },
+    dietType: { type: String, enum: Object.values(DietType), default: DietType.VEG },
     price: { type: Number, required: true, min: 0 },
     photos: [{ type: String }],
     quantity: { type: Number, required: true, min: 0 },
@@ -32,6 +33,7 @@ const MenuSchema = new Schema<IMenuDocument>(
 );
 
 MenuSchema.index({ kitchenId: 1, date: 1 }, { unique: true });
+MenuSchema.index({ "dishes.name": "text", "dishes.description": "text" });
 
 const Menu = mongoose.model<IMenuDocument>("Menu", MenuSchema);
 export default Menu;

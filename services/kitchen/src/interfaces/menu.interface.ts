@@ -1,10 +1,11 @@
 import type { Document } from "mongoose";
-import { DishCategory, MenuStatus } from "../constants/enums.js";
+import { DishCategory, DietType, MenuStatus } from "../constants/enums.js";
 
 export interface IDish {
   name: string;
   description: string;
   category: DishCategory;
+  dietType: DietType;
   price: number;
   photos: string[];
   quantity: number;

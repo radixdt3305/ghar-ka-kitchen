@@ -13,8 +13,8 @@ const quickActions = [
     icon: UtensilsCrossed,
     title: "Browse Menu",
     description: "Explore home-cooked meals near you",
-    to: "/",
-    comingSoon: true,
+    to: "/discover",
+    comingSoon: false,
   },
   {
     icon: ShoppingBag,

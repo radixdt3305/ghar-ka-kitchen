@@ -116,7 +116,6 @@ router.put("/:kitchenId", authenticate, authorize(UserRole.COOK), asyncHandler(k
 /**
  * @swagger
  * /api/kitchens/{kitchenId}/approve:
- *   patch:
  *     summary: Approve kitchen (Admin only)
  *     tags: [Kitchen]
  *     security:
@@ -182,5 +181,66 @@ router.patch("/:kitchenId/reject", authenticate, authorize(UserRole.ADMIN), asyn
  *         description: Nearby kitchens retrieved
  */
 router.get("/nearby", asyncHandler(kitchenController.getNearbyKitchens));
+
+/**
+ * @swagger
+ * /api/kitchens/search:
+ *   get:
+ *     summary: Search kitchens with filters
+ *     tags: [Kitchen]
+ *     parameters:
+ *       - in: query
+ *         name: lng
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: lat
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxDistance
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: cuisines
+ *         schema:
+ *           type: string
+ *         description: Comma-separated cuisines
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [distance, rating, price]
+ *     responses:
+ *       200:
+ *         description: Kitchens retrieved
+ */
+router.get("/search", asyncHandler(kitchenController.searchKitchens));
+
+/**
+ * @swagger
+ * /api/kitchens/{kitchenId}:
+ *   get:
+ *     summary: Get kitchen by ID
+ *     tags: [Kitchen]
+ *     parameters:
+ *       - in: path
+ *         name: kitchenId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Kitchen retrieved
+ */
+router.get("/:kitchenId", asyncHandler(kitchenController.getKitchenById));
 
 export default router;

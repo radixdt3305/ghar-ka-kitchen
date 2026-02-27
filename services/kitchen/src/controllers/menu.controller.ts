@@ -36,3 +36,29 @@ export const copyYesterdayMenu = async (req: Request, res: Response) => {
   const result = await menuService.copyYesterdayMenu(kitchenId as string, cookId);
   sendSuccess(res, 201, "Yesterday's menu copied", result);
 };
+
+export const getTodayMenus = async (req: Request, res: Response) => {
+  const { lng, lat, maxDistance } = req.query;
+  const result = await menuService.getTodayMenus(
+    lng ? Number(lng) : undefined,
+    lat ? Number(lat) : undefined,
+    maxDistance ? Number(maxDistance) : undefined
+  );
+  sendSuccess(res, 200, "Today's menus retrieved", result);
+};
+
+export const searchDishes = async (req: Request, res: Response) => {
+  const result = await menuService.searchDishes(req.query);
+  sendSuccess(res, 200, "Dishes retrieved", result);
+};
+
+export const getTrendingDishes = async (req: Request, res: Response) => {
+  const { lng, lat, maxDistance, limit } = req.query;
+  const result = await menuService.getTrendingDishes(
+    lng ? Number(lng) : undefined,
+    lat ? Number(lat) : undefined,
+    maxDistance ? Number(maxDistance) : undefined,
+    limit ? Number(limit) : undefined
+  );
+  sendSuccess(res, 200, "Trending dishes retrieved", result);
+};

@@ -23,6 +23,9 @@ export interface IKitchen {
   cuisines: CuisineType[];
   status: KitchenStatus;
   fssaiLicense?: string;
+  rating: number;
+  totalRatings: number;
+  totalOrders: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

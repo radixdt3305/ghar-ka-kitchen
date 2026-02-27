@@ -31,6 +31,13 @@ export enum DishCategory {
   BEVERAGES = "beverages",
 }
 
+export enum DietType {
+  VEG = "veg",
+  NON_VEG = "non_veg",
+  VEGAN = "vegan",
+  EGG = "egg",
+}
+
 export enum MenuStatus {
   AVAILABLE = "available",
   SOLD_OUT = "sold_out",

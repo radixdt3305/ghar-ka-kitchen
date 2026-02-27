@@ -44,6 +44,28 @@ export class KitchenService {
     return kitchenRepository.findNearby(lng, lat, maxDistance);
   }
 
+  async searchKitchens(filters: any) {
+    const { lng, lat, maxDistance, cuisines, minPrice, maxPrice, minRating, sortBy } = filters;
+    return kitchenRepository.search({
+      lng: lng ? Number(lng) : undefined,
+      lat: lat ? Number(lat) : undefined,
+      maxDistance: maxDistance ? Number(maxDistance) : undefined,
+      cuisines: cuisines ? cuisines.split(',') : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      minRating: minRating ? Number(minRating) : undefined,
+      sortBy: sortBy || 'distance',
+    });
+  }
+
+  async getKitchenById(kitchenId: string) {
+    const kitchen = await kitchenRepository.findById(kitchenId);
+    if (!kitchen) {
+      throw new AppError("Kitchen not found", 404);
+    }
+    return kitchen;
+  }
+
   async getAllKitchens(filters: any) {
     return kitchenRepository.findAll(filters);
   }

@@ -32,9 +32,64 @@ export class KitchenRepository {
           $maxDistance: maxDistance,
         },
       },
-      status: KitchenStatus.APPROVED,
+      status: { $in: [KitchenStatus.APPROVED, KitchenStatus.PENDING] },
       isActive: true,
     });
+  }
+
+  async search(params: {
+    lng?: number;
+    lat?: number;
+    maxDistance?: number;
+    cuisines?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+    sortBy?: string;
+  }) {
+    const { lng, lat, maxDistance = 5000, cuisines, minRating, sortBy } = params;
+
+    const query: any = {
+      status: { $in: [KitchenStatus.APPROVED, KitchenStatus.PENDING] },
+      isActive: true,
+    };
+
+    if (cuisines && cuisines.length > 0) {
+      query.cuisines = { $in: cuisines };
+    }
+
+    if (minRating) {
+      query.rating = { $gte: minRating };
+    }
+
+    // When sorting by distance, use $near (results are pre-sorted by distance)
+    if (lng && lat && (!sortBy || sortBy === "distance")) {
+      query.location = {
+        $near: {
+          $geometry: { type: "Point", coordinates: [lng, lat] },
+          $maxDistance: maxDistance,
+        },
+      };
+      return Kitchen.find(query).limit(50);
+    }
+
+    // For non-distance sorting with location, use $geoWithin (no implicit sort)
+    if (lng && lat) {
+      query.location = {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], maxDistance / 6378100],
+        },
+      };
+    }
+
+    const sortOptions: Record<string, any> = {
+      rating: { rating: -1 },
+      price: { rating: 1 }, // cheapest kitchens first (no direct price on kitchen, use rating as proxy)
+      popularity: { totalOrders: -1 },
+    };
+
+    const sort = sortOptions[sortBy || ""] || { createdAt: -1 };
+    return Kitchen.find(query).sort(sort).limit(50);
   }
 
   async findAll(filters: any = {}) {
