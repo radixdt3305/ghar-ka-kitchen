@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Copy, ArrowLeft } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
 import axios from "axios";
 
@@ -208,6 +209,15 @@ export function MenuCreate() {
                     placeholder="Describe the dish..."
                     rows={2}
                     required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Dish Photos</label>
+                  <ImageUpload
+                    value={dish.photos}
+                    onChange={(urls) => updateDish(index, "photos", urls)}
+                    maxImages={3}
                   />
                 </div>
 

@@ -124,13 +124,22 @@ export function CookDashboard() {
       {/* Kitchen Info Card */}
       <Card className="mb-6">
         <CardHeader className="flex flex-row items-center justify-between">
-          <div>
+          <div className="flex-1">
             <CardTitle className="text-xl">{kitchen.name}</CardTitle>
             <p className="mt-1 text-sm text-gray-500">{kitchen.description}</p>
           </div>
           {getStatusBadge(kitchen.status)}
         </CardHeader>
         <CardContent>
+          {kitchen.photos && kitchen.photos.length > 0 && (
+            <div className="mb-4">
+              <img
+                src={kitchen.photos[0]}
+                alt={kitchen.name}
+                className="h-48 w-full rounded-lg object-cover"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <p className="text-sm font-medium text-gray-500">Cuisines</p>

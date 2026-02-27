@@ -126,31 +126,40 @@ export function MenuManagement() {
                       key={dish._id}
                       className="flex items-center justify-between rounded-lg border p-4"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-medium text-gray-900">{dish.name}</h4>
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-                            {dish.category}
-                          </span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                              dish.status === "available"
-                                ? "bg-green-100 text-green-700"
-                                : dish.status === "sold_out"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {dish.status.replace("_", " ")}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-500">{dish.description}</p>
-                        <div className="mt-2 flex gap-4 text-sm text-gray-600">
-                          <span>₹{dish.price}</span>
-                          <span>•</span>
-                          <span>
-                            {dish.availableQuantity}/{dish.quantity} available
-                          </span>
+                      <div className="flex flex-1 gap-4">
+                        {dish.photos && dish.photos.length > 0 && (
+                          <img
+                            src={dish.photos[0]}
+                            alt={dish.name}
+                            className="h-20 w-20 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <h4 className="font-medium text-gray-900">{dish.name}</h4>
+                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                              {dish.category}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                dish.status === "available"
+                                  ? "bg-green-100 text-green-700"
+                                  : dish.status === "sold_out"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {dish.status.replace("_", " ")}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-gray-500">{dish.description}</p>
+                          <div className="mt-2 flex gap-4 text-sm text-gray-600">
+                            <span>₹{dish.price}</span>
+                            <span>•</span>
+                            <span>
+                              {dish.availableQuantity}/{dish.quantity} available
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <Button

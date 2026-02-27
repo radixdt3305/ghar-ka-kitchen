@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
+import { ImageUpload } from "@/components/ui/image-upload";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -30,6 +30,7 @@ export function KitchenSetup() {
     defaultValues: {
       name: "",
       description: "",
+      photos: [],
       address: { street: "", city: "", state: "", pincode: "" },
       location: { type: "Point", coordinates: [0, 0] },
       cuisines: [],
@@ -49,6 +50,7 @@ export function KitchenSetup() {
         form.reset({
           name: data.data.name,
           description: data.data.description,
+          photos: data.data.photos || [],
           address: data.data.address,
           location: data.data.location,
           cuisines: data.data.cuisines,
@@ -199,6 +201,24 @@ export function KitchenSetup() {
                         placeholder="Tell customers about your kitchen..."
                         rows={3}
                         {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="photos"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kitchen Photos</FormLabel>
+                    <FormControl>
+                      <ImageUpload
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        maxImages={5}
                       />
                     </FormControl>
                     <FormMessage />
