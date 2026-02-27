@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Home, User, LogOut } from "lucide-react";
+import { ChefHat, Home, User, LogOut, UtensilsCrossed } from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -12,11 +12,13 @@ export function Navbar() {
     navigate("/login");
   };
 
+  const isCook = user?.role === "cook";
+
   return (
     <header className="sticky top-0 z-50 border-b bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to={isCook ? "/cook/dashboard" : "/"} className="flex items-center gap-2">
           <ChefHat className="h-7 w-7 text-orange-500" />
           <span className="text-xl font-bold text-orange-500">
             Ghar Ka Kitchen
@@ -25,10 +27,10 @@ export function Navbar() {
 
         {/* Navigation */}
         <nav className="flex items-center gap-1">
-          <Link to="/">
+          <Link to={isCook ? "/cook/dashboard" : "/"}>
             <Button variant="ghost" size="sm" className="gap-2">
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Home</span>
+              {isCook ? <UtensilsCrossed className="h-4 w-4" /> : <Home className="h-4 w-4" />}
+              <span className="hidden sm:inline">{isCook ? "Dashboard" : "Home"}</span>
             </Button>
           </Link>
           <Link to="/profile">
