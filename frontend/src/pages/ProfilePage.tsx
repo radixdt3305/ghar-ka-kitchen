@@ -5,6 +5,7 @@ import {
 } from "@/components/profile/ProfileSidebar";
 import { PersonalInfoForm } from "@/components/profile/PersonalInfoForm";
 import { ChangePasswordForm } from "@/components/profile/ChangePasswordForm";
+import { AddressManagement } from "@/components/profile/AddressManagement";
 import { ComingSoonPlaceholder } from "@/components/profile/ComingSoonPlaceholder";
 
 export function ProfilePage() {
@@ -15,6 +16,8 @@ export function ProfilePage() {
     switch (activeSection) {
       case "personal-info":
         return <PersonalInfoForm />;
+      case "address":
+        return <AddressManagement />;
       case "change-password":
         return <ChangePasswordForm />;
       default:

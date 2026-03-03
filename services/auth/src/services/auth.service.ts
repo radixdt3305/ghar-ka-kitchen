@@ -298,6 +298,50 @@ export class AuthService {
     return this.toUserResponseDto(user);
   }
 
+  async addAddress(userId: string, addressData: any): Promise<UserResponseDto> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    if (user.addresses.length === 0 || addressData.isDefault) {
+      user.addresses.forEach((a: any) => (a.isDefault = false));
+      addressData.isDefault = true;
+    }
+
+    user.addresses.push(addressData);
+    await user.save();
+    return this.toUserResponseDto(user);
+  }
+
+  async removeAddress(userId: string, addressId: string): Promise<UserResponseDto> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    const addrIndex = user.addresses.findIndex((a: any) => a._id?.toString() === addressId);
+    if (addrIndex === -1) throw new AppError("Address not found", 404);
+
+    const wasDefault = (user.addresses[addrIndex] as any).isDefault;
+    user.addresses.splice(addrIndex, 1);
+
+    if (wasDefault && user.addresses.length > 0) {
+      (user.addresses[0] as any).isDefault = true;
+    }
+
+    await user.save();
+    return this.toUserResponseDto(user);
+  }
+
+  async setDefaultAddress(userId: string, addressId: string): Promise<UserResponseDto> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    user.addresses.forEach((a: any) => {
+      a.isDefault = a._id?.toString() === addressId;
+    });
+
+    await user.save();
+    return this.toUserResponseDto(user);
+  }
+
   async refreshToken(refreshToken: string): Promise<ITokenPair> {
     return tokenService.refreshTokens(refreshToken);
   }

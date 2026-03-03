@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Home, User, LogOut, UtensilsCrossed } from "lucide-react";
+import { ChefHat, Home, User, LogOut, UtensilsCrossed, ShoppingCart, Package } from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -33,6 +33,33 @@ export function Navbar() {
               <span className="hidden sm:inline">{isCook ? "Dashboard" : "Home"}</span>
             </Button>
           </Link>
+          
+          {isCook && (
+            <Link to="/cook/orders">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Orders</span>
+              </Button>
+            </Link>
+          )}
+
+          {!isCook && (
+            <>
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="hidden sm:inline">Cart</span>
+                </Button>
+              </Link>
+              <Link to="/orders">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  <span className="hidden sm:inline">Orders</span>
+                </Button>
+              </Link>
+            </>
+          )}
+          
           <Link to="/profile">
             <Button variant="ghost" size="sm" className="gap-2">
               <User className="h-4 w-4" />

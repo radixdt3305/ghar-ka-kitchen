@@ -22,7 +22,7 @@ const AddressSchema = new Schema(
     lng: { type: Number, required: true },
     isDefault: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: true }
 );
 
 // --- User Schema ---

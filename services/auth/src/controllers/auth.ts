@@ -101,3 +101,32 @@ export const updateProfile = async (
   const result = await authService.updateProfile(userId, dto);
   sendSuccess(res, 200, "Profile updated successfully", result);
 };
+
+export const addAddress = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const result = await authService.addAddress(userId, req.body);
+  sendSuccess(res, 201, "Address added successfully", result);
+};
+
+export const removeAddress = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const { addressId } = req.params;
+  const result = await authService.removeAddress(userId, addressId as string);
+  sendSuccess(res, 200, "Address removed successfully", result);
+};
+
+export const setDefaultAddress = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.userId!;
+  const { addressId } = req.params;
+  const result = await authService.setDefaultAddress(userId, addressId as string);
+  sendSuccess(res, 200, "Default address updated", result);
+};

@@ -266,4 +266,7 @@ router.get("/dishes/search", asyncHandler(menuController.searchDishes));
  */
 router.get("/dishes/trending", asyncHandler(menuController.getTrendingDishes));
 
+router.get("/menu/:kitchenId/today", asyncHandler(menuController.getTodayMenuByKitchen));
+router.patch("/menu/:kitchenId/dish/:dishId/quantity", asyncHandler(menuController.updateDishQuantity));
+
 export default router;

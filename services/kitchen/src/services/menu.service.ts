@@ -86,17 +86,17 @@ export class MenuService {
 
   async searchDishes(filters: any) {
     const { query, category, dietType, minPrice, maxPrice, lng, lat, maxDistance, sortBy } = filters;
-    return menuRepository.searchDishes({
-      query,
-      category,
-      dietType,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      lng: lng ? Number(lng) : undefined,
-      lat: lat ? Number(lat) : undefined,
-      maxDistance: maxDistance ? Number(maxDistance) : undefined,
-      sortBy,
-    });
+    const searchParams: Record<string, any> = {};
+    if (query) searchParams.query = query;
+    if (category) searchParams.category = category;
+    if (dietType) searchParams.dietType = dietType;
+    if (minPrice) searchParams.minPrice = Number(minPrice);
+    if (maxPrice) searchParams.maxPrice = Number(maxPrice);
+    if (lng) searchParams.lng = Number(lng);
+    if (lat) searchParams.lat = Number(lat);
+    if (maxDistance) searchParams.maxDistance = Number(maxDistance);
+    if (sortBy) searchParams.sortBy = sortBy;
+    return menuRepository.searchDishes(searchParams);
   }
 
   async getTrendingDishes(lng?: number, lat?: number, maxDistance?: number, limit?: number) {
@@ -106,6 +106,37 @@ export class MenuService {
       maxDistance ? Number(maxDistance) : undefined,
       limit ? Number(limit) : 10
     );
+  }
+
+  async getTodayMenuByKitchen(kitchenId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const menu = await menuRepository.findByKitchenAndDate(kitchenId, today);
+    if (!menu) {
+      throw new AppError("No menu found for today", 404);
+    }
+    return menu;
+  }
+
+  async updateDishQuantity(kitchenId: string, dishId: string, quantityChange: number) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const menu = await menuRepository.findByKitchenAndDate(kitchenId, today);
+    if (!menu) {
+      throw new AppError("No menu found for today", 404);
+    }
+
+    const dish = menu.dishes.find((d: any) => d._id.toString() === dishId);
+    if (!dish) {
+      throw new AppError("Dish not found", 404);
+    }
+
+    dish.availableQuantity += quantityChange;
+    if (dish.availableQuantity < 0) dish.availableQuantity = 0;
+    if (dish.availableQuantity > dish.quantity) dish.availableQuantity = dish.quantity;
+
+    await menu.save();
+    return menu;
   }
 }
 

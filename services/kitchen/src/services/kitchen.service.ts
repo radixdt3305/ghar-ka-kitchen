@@ -46,16 +46,15 @@ export class KitchenService {
 
   async searchKitchens(filters: any) {
     const { lng, lat, maxDistance, cuisines, minPrice, maxPrice, minRating, sortBy } = filters;
-    return kitchenRepository.search({
-      lng: lng ? Number(lng) : undefined,
-      lat: lat ? Number(lat) : undefined,
-      maxDistance: maxDistance ? Number(maxDistance) : undefined,
-      cuisines: cuisines ? cuisines.split(',') : undefined,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
-      minRating: minRating ? Number(minRating) : undefined,
-      sortBy: sortBy || 'distance',
-    });
+    const searchParams: Record<string, any> = { sortBy: sortBy || 'distance' };
+    if (lng) searchParams.lng = Number(lng);
+    if (lat) searchParams.lat = Number(lat);
+    if (maxDistance) searchParams.maxDistance = Number(maxDistance);
+    if (cuisines) searchParams.cuisines = cuisines.split(',');
+    if (minPrice) searchParams.minPrice = Number(minPrice);
+    if (maxPrice) searchParams.maxPrice = Number(maxPrice);
+    if (minRating) searchParams.minRating = Number(minRating);
+    return kitchenRepository.search(searchParams);
   }
 
   async getKitchenById(kitchenId: string) {
@@ -64,6 +63,10 @@ export class KitchenService {
       throw new AppError("Kitchen not found", 404);
     }
     return kitchen;
+  }
+
+  async getKitchenByCookIdSafe(cookId: string) {
+    return kitchenRepository.findByCookId(cookId);
   }
 
   async getAllKitchens(filters: any) {

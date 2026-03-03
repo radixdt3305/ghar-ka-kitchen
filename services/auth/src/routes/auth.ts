@@ -10,6 +10,9 @@ import {
   changePassword,
   getProfile,
   updateProfile,
+  addAddress,
+  removeAddress,
+  setDefaultAddress,
 } from "../controllers/auth.js";
 import { validate } from "../middleware/validate.middleware.js";
 import {
@@ -447,5 +450,9 @@ router.get("/profile", authenticate, getProfile);
  *         description: Unauthorized
  */
 router.put("/profile", authenticate, updateProfile);
+
+router.post("/addresses", authenticate, addAddress);
+router.delete("/addresses/:addressId", authenticate, removeAddress);
+router.patch("/addresses/:addressId/default", authenticate, setDefaultAddress);
 
 export default router;

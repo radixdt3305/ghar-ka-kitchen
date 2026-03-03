@@ -65,4 +65,7 @@ export const kitchenApi = {
 
   getTrendingDishes: (params?: any) =>
     api.get<ApiResponse<any[]>>(`${KITCHEN_BASE}/dishes/trending`, { params }),
+
+  getTodayMenuByKitchen: (kitchenId: string) =>
+    api.get<ApiResponse<any>>(`${KITCHEN_BASE}/menu/${kitchenId}/today`),
 };
