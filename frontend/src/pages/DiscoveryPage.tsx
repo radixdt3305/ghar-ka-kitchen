@@ -204,7 +204,16 @@ export function DiscoveryPage() {
   const addToCart = async (kitchenId: string, dishId: string, dishName: string) => {
     try {
       await cartApi.addToCart(kitchenId, dishId, 1);
-      toast.success(`${dishName} added to cart!`);
+      toast.success(`${dishName} added to cart!`, {
+        action: {
+          label: "View Cart",
+          onClick: () => window.location.href = "/cart",
+        },
+      });
+      // Refresh cart count in navbar
+      if ((window as any).refreshCartCount) {
+        (window as any).refreshCartCount();
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to add to cart");
     }

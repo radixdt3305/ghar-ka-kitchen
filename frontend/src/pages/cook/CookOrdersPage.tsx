@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { orderApi, type Order, OrderStatus } from "@/api/order.api";
+import { kitchenApi } from "@/api/kitchen.api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Package, ChevronRight } from "lucide-react";
+import { io, Socket } from "socket.io-client";
 
 const statusColors: Record<OrderStatus, string> = {
   [OrderStatus.PLACED]: "bg-blue-500",
@@ -27,10 +29,71 @@ export function CookOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [filter, setFilter] = useState<"active" | "all">("active");
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [kitchenId, setKitchenId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadOrders();
+    loadKitchenAndOrders();
   }, []);
+
+  useEffect(() => {
+    if (kitchenId && !socket) {
+      setupSocket();
+    }
+    return () => {
+      socket?.disconnect();
+    };
+  }, [kitchenId]);
+
+  const setupSocket = () => {
+    const token = localStorage.getItem("accessToken");
+    const newSocket = io("http://localhost:5003", {
+      auth: { token },
+    });
+
+    newSocket.on("connect", () => {
+      console.log("Cook connected to order updates");
+      if (kitchenId) {
+        newSocket.emit("join:kitchen", kitchenId);
+        console.log("Joined kitchen room:", kitchenId);
+      }
+    });
+
+    newSocket.on("order:created", (newOrder: Order) => {
+      console.log("New order received:", newOrder);
+      setOrders((prev) => [newOrder, ...prev]);
+      toast.success(`New order #${newOrder.orderId} received!`, {
+        duration: 5000,
+      });
+    });
+
+    newSocket.on("order:cancelled", (cancelledOrder: Order) => {
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === cancelledOrder.orderId ? cancelledOrder : o))
+      );
+      toast.info(`Order #${cancelledOrder.orderId} was cancelled`);
+    });
+
+    setSocket(newSocket);
+  };
+
+  const loadKitchenAndOrders = async () => {
+    try {
+      const [ordersRes, kitchenRes] = await Promise.all([
+        orderApi.getOrders(),
+        kitchenApi.getMyKitchen(),
+      ]);
+      setOrders(ordersRes.data);
+      if (kitchenRes.data.success && kitchenRes.data.data) {
+        setKitchenId(kitchenRes.data.data._id);
+      }
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadOrders = async () => {
     try {
@@ -38,9 +101,6 @@ export function CookOrdersPage() {
       setOrders(data);
     } catch (error) {
       console.error("Failed to load orders:", error);
-      toast.error("Failed to load orders");
-    } finally {
-      setLoading(false);
     }
   };
 
