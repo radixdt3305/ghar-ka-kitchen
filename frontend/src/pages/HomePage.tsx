@@ -20,8 +20,8 @@ const quickActions = [
     icon: ShoppingBag,
     title: "My Orders",
     description: "Track your current and past orders",
-    to: "/",
-    comingSoon: true,
+    to: "/orders",
+    comingSoon: false,
   },
   {
     icon: User,

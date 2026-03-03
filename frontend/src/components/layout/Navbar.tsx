@@ -1,18 +1,43 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Home, User, LogOut, UtensilsCrossed } from "lucide-react";
+import { ChefHat, Home, User, LogOut, UtensilsCrossed, ShoppingCart, Package } from "lucide-react";
+import { useEffect, useState } from "react";
+import { cartApi } from "@/api/cart.api";
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [cartCount, setCartCount] = useState(0);
+
+  const isCook = user?.role === "cook";
+
+  useEffect(() => {
+    if (!isCook) {
+      loadCartCount();
+    }
+  }, [isCook]);
+
+  const loadCartCount = async () => {
+    try {
+      const { data } = await cartApi.getCart();
+      setCartCount(data.items?.length || 0);
+    } catch {
+      setCartCount(0);
+    }
+  };
+
+  // Expose refresh function globally
+  useEffect(() => {
+    if (!isCook) {
+      (window as any).refreshCartCount = loadCartCount;
+    }
+  }, [isCook]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
-
-  const isCook = user?.role === "cook";
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white">
@@ -33,6 +58,38 @@ export function Navbar() {
               <span className="hidden sm:inline">{isCook ? "Dashboard" : "Home"}</span>
             </Button>
           </Link>
+          
+          {isCook && (
+            <Link to="/cook/orders">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Orders</span>
+              </Button>
+            </Link>
+          )}
+
+          {!isCook && (
+            <>
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="gap-2 relative">
+                  <ShoppingCart className="h-4 w-4" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                  <span className="hidden sm:inline">Cart</span>
+                </Button>
+              </Link>
+              <Link to="/orders">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  <span className="hidden sm:inline">Orders</span>
+                </Button>
+              </Link>
+            </>
+          )}
+          
           <Link to="/profile">
             <Button variant="ghost" size="sm" className="gap-2">
               <User className="h-4 w-4" />

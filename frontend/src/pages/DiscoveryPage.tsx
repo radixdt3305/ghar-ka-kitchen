@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 import { kitchenApi } from "@/api/kitchen.api";
+import { cartApi } from "@/api/cart.api";
 import type { Kitchen } from "@/types/kitchen.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Filter, Star, TrendingUp, Map, List, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, MapPin, Filter, Star, TrendingUp, Map, List, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
@@ -76,6 +78,7 @@ function StarRating({ rating, totalRatings }: { rating: number; totalRatings: nu
 }
 
 export function DiscoveryPage() {
+  const navigate = useNavigate();
   const [kitchens, setKitchens] = useState<Kitchen[]>([]);
   const [dishes, setDishes] = useState<any[]>([]);
   const [trending, setTrending] = useState<any[]>([]);
@@ -195,6 +198,24 @@ export function DiscoveryPage() {
       }
     } catch {
       // Trending is non-critical, silently fail
+    }
+  };
+
+  const addToCart = async (kitchenId: string, dishId: string, dishName: string) => {
+    try {
+      await cartApi.addToCart(kitchenId, dishId, 1);
+      toast.success(`${dishName} added to cart!`, {
+        action: {
+          label: "View Cart",
+          onClick: () => window.location.href = "/cart",
+        },
+      });
+      // Refresh cart count in navbar
+      if ((window as any).refreshCartCount) {
+        (window as any).refreshCartCount();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to add to cart");
     }
   };
 
@@ -528,7 +549,11 @@ export function DiscoveryPage() {
         /* Kitchen List View */
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {kitchens.map((kitchen) => (
-            <Card key={kitchen._id} className="cursor-pointer transition-shadow hover:shadow-lg">
+            <Card
+              key={kitchen._id}
+              className="cursor-pointer transition-shadow hover:shadow-lg"
+              onClick={() => navigate(`/kitchen/${kitchen._id}`)}
+            >
               {kitchen.photos && kitchen.photos.length > 0 && (
                 <img
                   src={kitchen.photos[0]}
@@ -571,7 +596,7 @@ export function DiscoveryPage() {
         /* Dishes View */
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {dishes.map((item, index) => (
-            <Card key={index} className="cursor-pointer transition-shadow hover:shadow-lg">
+            <Card key={index} className="transition-shadow hover:shadow-lg">
               <div className="flex gap-4 p-4">
                 {item.dishes?.photos && item.dishes.photos.length > 0 && (
                   <img
@@ -600,6 +625,14 @@ export function DiscoveryPage() {
                       <StarRating rating={item.kitchen.rating} totalRatings={item.kitchen.totalRatings} />
                     )}
                   </div>
+                  <Button
+                    size="sm"
+                    className="mt-3 w-full bg-orange-500 hover:bg-orange-600"
+                    onClick={() => addToCart(item.kitchen._id, item.dishes._id, item.dishes.name)}
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Add to Cart
+                  </Button>
                 </div>
               </div>
             </Card>

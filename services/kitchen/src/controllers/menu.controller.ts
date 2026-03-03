@@ -62,3 +62,16 @@ export const getTrendingDishes = async (req: Request, res: Response) => {
   );
   sendSuccess(res, 200, "Trending dishes retrieved", result);
 };
+
+export const getTodayMenuByKitchen = async (req: Request, res: Response) => {
+  const { kitchenId } = req.params;
+  const result = await menuService.getTodayMenuByKitchen(kitchenId as string);
+  sendSuccess(res, 200, "Today's menu retrieved", result);
+};
+
+export const updateDishQuantity = async (req: Request, res: Response) => {
+  const { kitchenId, dishId } = req.params;
+  const { quantity } = req.body;
+  const result = await menuService.updateDishQuantity(kitchenId as string, dishId as string, quantity);
+  sendSuccess(res, 200, "Dish quantity updated", result);
+};

@@ -241,6 +241,8 @@ router.get("/search", asyncHandler(kitchenController.searchKitchens));
  *       200:
  *         description: Kitchen retrieved
  */
+router.get("/cook/:cookId", asyncHandler(kitchenController.getKitchenByCookId));
+
 router.get("/:kitchenId", asyncHandler(kitchenController.getKitchenById));
 
 export default router;

@@ -50,6 +50,12 @@ export const searchKitchens = async (req: Request, res: Response) => {
 
 export const getKitchenById = async (req: Request, res: Response) => {
   const { kitchenId } = req.params;
-  const result = await kitchenService.getKitchenById(kitchenId);
+  const result = await kitchenService.getKitchenById(kitchenId as string);
+  sendSuccess(res, 200, "Kitchen retrieved", result);
+};
+
+export const getKitchenByCookId = async (req: Request, res: Response) => {
+  const { cookId } = req.params;
+  const result = await kitchenService.getKitchenByCookIdSafe(cookId as string);
   sendSuccess(res, 200, "Kitchen retrieved", result);
 };

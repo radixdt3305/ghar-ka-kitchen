@@ -201,15 +201,19 @@ export function CookDashboard() {
             </Card>
           </Link>
 
-          <Card className="cursor-pointer transition-shadow hover:shadow-md opacity-50">
-            <CardHeader>
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-50">
-                <ChefHat className="h-6 w-6 text-orange-500" />
-              </div>
-              <CardTitle className="text-lg">Orders</CardTitle>
-              <p className="text-sm text-gray-500">Coming soon</p>
-            </CardHeader>
-          </Card>
+          <Link to="/cook/orders">
+            <Card className="cursor-pointer transition-shadow hover:shadow-md">
+              <CardHeader>
+                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-50">
+                  <ChefHat className="h-6 w-6 text-orange-500" />
+                </div>
+                <CardTitle className="text-lg">Orders</CardTitle>
+                <p className="text-sm text-gray-500">
+                  View and manage incoming orders
+                </p>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       )}
     </div>
