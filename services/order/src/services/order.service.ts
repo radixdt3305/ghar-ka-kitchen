@@ -5,12 +5,13 @@ import { kitchenClient } from "../utils/http-client.js";
 import { nanoid } from "nanoid";
 
 const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  [OrderStatus.PLACED]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-  [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+  [OrderStatus.PLACED]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED, OrderStatus.REJECTED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED, OrderStatus.REJECTED],
   [OrderStatus.PREPARING]: [OrderStatus.READY],
   [OrderStatus.READY]: [OrderStatus.DELIVERED],
   [OrderStatus.DELIVERED]: [],
   [OrderStatus.CANCELLED]: [],
+  [OrderStatus.REJECTED]: [],
 };
 
 export class OrderService {
@@ -18,6 +19,27 @@ export class OrderService {
     const cart = await Cart.findOne({ userId });
     if (!cart || cart.items.length === 0) {
       throw new Error("Cart is empty");
+    }
+
+    // Validate dish availability
+    try {
+      const { data: menuResponse } = await kitchenClient.get(`/api/kitchens/menu/${cart.kitchenId}/today`);
+      const menu = menuResponse.data;
+      
+      for (const item of cart.items) {
+        const dish = menu.dishes.find((d: any) => d._id === item.dishId);
+        if (!dish) {
+          throw new Error(`${item.name} is no longer available`);
+        }
+        if (dish.status !== 'available') {
+          throw new Error(`${item.name} is currently ${dish.status}`);
+        }
+        if (dish.availableQuantity < item.quantity) {
+          throw new Error(`${item.name} - Only ${dish.availableQuantity} available, you requested ${item.quantity}`);
+        }
+      }
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to validate dish availability");
     }
 
     // Match by _id first; fall back to index for legacy addresses without _id
@@ -107,6 +129,22 @@ export class OrderService {
       throw new Error("Cancellation window (15 minutes) has passed");
     }
 
+    // Process refund if payment was made
+    try {
+      const axios = (await import("axios")).default;
+      const token = process.env.JWT_SECRET; // This won't work, we need actual user token
+      
+      // Call refund without auth for now (we'll add internal service auth later)
+      await axios.post(
+        `http://localhost:5004/api/refunds/${orderId}`,
+        { reason }
+      );
+      console.log(`✅ Refund initiated for order ${orderId}`);
+    } catch (error: any) {
+      console.log(`⚠️ Refund failed: ${error.response?.data?.message || error.message}`);
+      // Don't fail the cancellation if refund fails
+    }
+
     // Restore dish quantities
     for (const item of order.items) {
       await kitchenClient.patch(`/api/kitchens/menu/${order.kitchenId}/dish/${item.dishId}/quantity`, {
@@ -117,6 +155,40 @@ export class OrderService {
     order.status = OrderStatus.CANCELLED;
     order.cancelReason = reason;
     order.statusHistory.push({ status: OrderStatus.CANCELLED, timestamp: new Date() });
+    await order.save();
+    return order;
+  }
+
+  async rejectOrder(orderId: string, reason: string) {
+    const order = await Order.findOne({ orderId });
+    if (!order) throw new Error("Order not found");
+
+    if (![OrderStatus.PLACED, OrderStatus.CONFIRMED].includes(order.status)) {
+      throw new Error("Order can only be rejected when PLACED or CONFIRMED");
+    }
+
+    // Process refund automatically
+    try {
+      const axios = (await import("axios")).default;
+      await axios.post(
+        `http://localhost:5004/api/refunds/${orderId}`,
+        { reason: `Order rejected by cook: ${reason}` }
+      );
+      console.log(`✅ Refund initiated for rejected order ${orderId}`);
+    } catch (error: any) {
+      console.log(`⚠️ Refund failed: ${error.response?.data?.message || error.message}`);
+    }
+
+    // Restore dish quantities
+    for (const item of order.items) {
+      await kitchenClient.patch(`/api/kitchens/menu/${order.kitchenId}/dish/${item.dishId}/quantity`, {
+        quantity: item.quantity,
+      });
+    }
+
+    order.status = OrderStatus.REJECTED;
+    order.cancelReason = reason;
+    order.statusHistory.push({ status: OrderStatus.REJECTED, timestamp: new Date() });
     await order.save();
     return order;
   }

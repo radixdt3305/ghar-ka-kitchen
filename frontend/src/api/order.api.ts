@@ -7,6 +7,7 @@ export enum OrderStatus {
   READY = "READY",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
+  REJECTED = "REJECTED",
 }
 
 export interface OrderItem {
@@ -54,4 +55,7 @@ export const orderApi = {
   
   cancelOrder: (orderId: string, reason: string) =>
     apiClient.patch<Order>(`/orders/${orderId}/cancel`, { reason }),
+  
+  rejectOrder: (orderId: string, reason: string) =>
+    apiClient.patch<Order>(`/orders/${orderId}/reject`, { reason }),
 };

@@ -50,6 +50,18 @@ export default defineConfig({
         target: "http://localhost:5003",
         changeOrigin: true,
       },
+      "/api/payments": {
+        target: "http://localhost:5004",
+        changeOrigin: true,
+      },
+      "/api/payouts": {
+        target: "http://localhost:5004",
+        changeOrigin: true,
+      },
+      "/api/refunds": {
+        target: "http://localhost:5004",
+        changeOrigin: true,
+      },
     },
   },
 });

@@ -7,6 +7,7 @@ export enum OrderStatus {
   READY = "READY",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
+  REJECTED = "REJECTED",
 }
 
 export interface IOrderItem {

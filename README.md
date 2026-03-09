@@ -10,6 +10,7 @@ A microservices-based food delivery platform built with Node.js, Express, TypeSc
 | kitchen | 5001 | Kitchen & menu management |
 | search  | 5002 | Search & discovery |
 | order   | 5003 | Cart & order management |
+| payment | 5004 | Payment processing & cook payouts |
 
 ## Tech Stack
 
@@ -19,6 +20,7 @@ A microservices-based food delivery platform built with Node.js, Express, TypeSc
 - **Database**: MongoDB (Mongoose)
 - **Auth**: JWT (access + refresh token rotation)
 - **Real-time**: Socket.io (order tracking)
+- **Payments**: Stripe (Connect for payouts)
 - **Docs**: Swagger UI (`/api-docs`)
 
 ## Getting Started
@@ -65,6 +67,17 @@ npm install
 npm run dev
 ```
 
+### Payment Service
+
+```bash
+cd services/payment
+cp .env.example .env        # Add Stripe keys
+npm install
+npm run dev
+```
+
+Swagger docs: `http://localhost:5004/api-docs`
+
 ## API Overview
 
 ### Auth (`/api/auth`)
@@ -96,3 +109,21 @@ npm run dev
 | GET | `/:orderId` | Get order details |
 | PATCH | `/:orderId/status` | Update order status (Cook) |
 | PATCH | `/:orderId/cancel` | Cancel order |
+
+### Payments (`/api/payments`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/create-intent` | Create payment intent |
+| POST | `/webhook` | Stripe webhook handler |
+| GET | `/transaction/:orderId` | Get transaction details |
+| GET | `/history` | Payment history |
+
+### Payouts (`/api/payouts`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/connect-account` | Setup Stripe Connect |
+| GET | `/earnings` | Cook earnings summary |
+| POST | `/trigger` | Manual payout |
+| GET | `/history` | Payout history |

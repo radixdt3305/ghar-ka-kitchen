@@ -70,3 +70,17 @@ export const cancelOrder = async (req: AuthRequest, res: Response) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const rejectOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const { reason } = req.body;
+    const order = await orderService.rejectOrder(req.params.orderId as string, reason);
+
+    req.app.get("io").to(`order:${order.orderId}`).emit("order:rejected", order);
+    req.app.get("io").to(`user:${order.userId}`).emit("order:rejected", order);
+
+    res.json(order);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};

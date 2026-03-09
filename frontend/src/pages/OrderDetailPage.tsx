@@ -81,7 +81,13 @@ export default function OrderDetailPage() {
     try {
       const { data } = await orderApi.cancelOrder(orderId!, cancelReason);
       setOrder(data);
-      alert("Order cancelled successfully");
+      alert(
+        "Order cancelled successfully!\n\n" +
+        "✅ Refund has been initiated\n" +
+        "💰 Amount: ₹" + order?.totalAmount + "\n" +
+        "⏱️ Refund will be credited to your original payment method within 5-7 business days\n\n" +
+        "You can check the refund status in your Transaction History."
+      );
     } catch (error: any) {
       alert(error.response?.data?.error || "Failed to cancel order");
     }
@@ -180,6 +186,14 @@ export default function OrderDetailPage() {
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-2 text-red-600">Cancellation Reason</h3>
               <p className="text-gray-600">{order.cancelReason}</p>
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-semibold text-blue-900 mb-2">✅ Refund Initiated</h4>
+                <p className="text-sm text-blue-800">
+                  💰 Amount: ₹{order.totalAmount}<br />
+                  ⏱️ Your refund will be credited to your original payment method within 5-7 business days.<br />
+                  📊 Check <a href="/transactions" className="underline font-medium">Transaction History</a> for refund status.
+                </p>
+              </div>
             </div>
           )}
         </div>

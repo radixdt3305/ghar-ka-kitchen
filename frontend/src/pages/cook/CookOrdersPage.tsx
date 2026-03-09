@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Package, ChevronRight } from "lucide-react";
+import { Package, ChevronRight, X } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 
 const statusColors: Record<OrderStatus, string> = {
@@ -15,6 +15,7 @@ const statusColors: Record<OrderStatus, string> = {
   [OrderStatus.READY]: "bg-orange-500",
   [OrderStatus.DELIVERED]: "bg-gray-500",
   [OrderStatus.CANCELLED]: "bg-red-500",
+  [OrderStatus.REJECTED]: "bg-red-600",
 };
 
 const NEXT_STATUS: Partial<Record<OrderStatus, { label: string; status: OrderStatus }>> = {
@@ -119,8 +120,26 @@ export function CookOrdersPage() {
     }
   };
 
+  const handleRejectOrder = async (orderId: string) => {
+    const reason = prompt("Reason for rejecting order:");
+    if (!reason) return;
+    
+    setUpdating(orderId);
+    try {
+      const { data } = await orderApi.rejectOrder(orderId, reason);
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId === orderId ? data : o))
+      );
+      toast.success(`Order #${orderId} rejected`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to reject order");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   const filteredOrders = filter === "active"
-    ? orders.filter((o) => ![OrderStatus.DELIVERED, OrderStatus.CANCELLED].includes(o.status))
+    ? orders.filter((o) => ![OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REJECTED].includes(o.status))
     : orders;
 
   if (loading) return <div className="p-8 text-center">Loading orders...</div>;
@@ -194,14 +213,27 @@ export function CookOrdersPage() {
                 </div>
 
                 {nextAction && (
-                  <Button
-                    className="w-full gap-2 bg-orange-500 hover:bg-orange-600"
-                    onClick={() => handleUpdateStatus(order.orderId, nextAction.status)}
-                    disabled={updating === order.orderId}
-                  >
-                    {updating === order.orderId ? "Updating..." : nextAction.label}
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 gap-2 bg-orange-500 hover:bg-orange-600"
+                      onClick={() => handleUpdateStatus(order.orderId, nextAction.status)}
+                      disabled={updating === order.orderId}
+                    >
+                      {updating === order.orderId ? "Updating..." : nextAction.label}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    {(order.status === OrderStatus.PLACED || order.status === OrderStatus.CONFIRMED) && (
+                      <Button
+                        variant="destructive"
+                        className="gap-2"
+                        onClick={() => handleRejectOrder(order.orderId)}
+                        disabled={updating === order.orderId}
+                      >
+                        <X className="h-4 w-4" />
+                        Reject
+                      </Button>
+                    )}
+                  </div>
                 )}
 
                 {order.cancelReason && (

@@ -142,4 +142,38 @@ router.patch("/:orderId/status", authorize(UserRole.COOK), orderController.updat
  */
 router.patch("/:orderId/cancel", orderController.cancelOrder);
 
+/**
+ * @swagger
+ * /api/orders/{orderId}/reject:
+ *   patch:
+ *     summary: Reject an order (cook only)
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [reason]
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Order rejected
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - cook role required
+ */
+router.patch("/:orderId/reject", authorize(UserRole.COOK), orderController.rejectOrder);
+
 export default router;

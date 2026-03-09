@@ -51,8 +51,8 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const { data } = await orderApi.createOrder(selectedAddress, timeSlot);
-      alert("Order placed successfully!");
-      navigate(`/orders/${data.orderId}`);
+      // Redirect to payment page
+      navigate(`/payment/${data.orderId}`);
     } catch (error: any) {
       alert(error.response?.data?.error || "Failed to place order");
     } finally {
