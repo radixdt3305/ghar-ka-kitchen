@@ -11,6 +11,7 @@ const statusColors: Record<OrderStatus, string> = {
   [OrderStatus.READY]: "bg-orange-500",
   [OrderStatus.DELIVERED]: "bg-gray-500",
   [OrderStatus.CANCELLED]: "bg-red-500",
+  [OrderStatus.REJECTED]: "bg-red-600",
 };
 
 export default function OrdersPage() {

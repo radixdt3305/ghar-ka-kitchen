@@ -4,6 +4,8 @@ import { kitchenApi } from "@/api/kitchen.api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Package, ChevronRight, X } from "lucide-react";
 import { io, Socket } from "socket.io-client";
@@ -32,6 +34,9 @@ export function CookOrdersPage() {
   const [filter, setFilter] = useState<"active" | "all">("active");
   const [socket, setSocket] = useState<Socket | null>(null);
   const [kitchenId, setKitchenId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [orderToReject, setOrderToReject] = useState<string | null>(null);
 
   useEffect(() => {
     loadKitchenAndOrders();
@@ -121,16 +126,26 @@ export function CookOrdersPage() {
   };
 
   const handleRejectOrder = async (orderId: string) => {
-    const reason = prompt("Reason for rejecting order:");
-    if (!reason) return;
+    setOrderToReject(orderId);
+    setRejectDialogOpen(true);
+  };
+
+  const confirmRejectOrder = async () => {
+    if (!orderToReject || !rejectReason.trim()) {
+      toast.error("Please provide a reason for rejection");
+      return;
+    }
     
-    setUpdating(orderId);
+    setUpdating(orderToReject);
     try {
-      const { data } = await orderApi.rejectOrder(orderId, reason);
+      const { data } = await orderApi.rejectOrder(orderToReject, rejectReason);
       setOrders((prev) =>
-        prev.map((o) => (o.orderId === orderId ? data : o))
+        prev.map((o) => (o.orderId === orderToReject ? data : o))
       );
-      toast.success(`Order #${orderId} rejected`);
+      toast.success(`Order #${orderToReject} rejected`);
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      setOrderToReject(null);
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to reject order");
     } finally {
@@ -223,15 +238,51 @@ export function CookOrdersPage() {
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                     {(order.status === OrderStatus.PLACED || order.status === OrderStatus.CONFIRMED) && (
-                      <Button
-                        variant="destructive"
-                        className="gap-2"
-                        onClick={() => handleRejectOrder(order.orderId)}
-                        disabled={updating === order.orderId}
-                      >
-                        <X className="h-4 w-4" />
-                        Reject
-                      </Button>
+                      <AlertDialog open={rejectDialogOpen && orderToReject === order.orderId} onOpenChange={(open) => {
+                        if (!open) {
+                          setRejectDialogOpen(false);
+                          setRejectReason("");
+                          setOrderToReject(null);
+                        }
+                      }}>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="gap-2"
+                            onClick={() => handleRejectOrder(order.orderId)}
+                            disabled={updating === order.orderId}
+                          >
+                            <X className="h-4 w-4" />
+                            Reject
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Reject Order #{order.orderId}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Please provide a reason for rejecting this order. The customer will be notified and automatically refunded.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="py-4">
+                            <Textarea
+                              placeholder="Reason for rejection (e.g., Ingredients not available, Kitchen closed, etc.)"
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              className="min-h-[100px]"
+                            />
+                          </div>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={confirmRejectOrder}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={!rejectReason.trim() || updating === order.orderId}
+                            >
+                              {updating === order.orderId ? "Rejecting..." : "Reject Order"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 )}

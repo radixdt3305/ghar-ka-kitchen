@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { orderApi, type Order, OrderStatus } from "../api/order.api";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../components/ui/alert-dialog";
 import { io, Socket } from "socket.io-client";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 const statusSteps = [
   OrderStatus.PLACED,
@@ -22,6 +24,7 @@ const statusColors: Record<OrderStatus, string> = {
   [OrderStatus.READY]: "bg-orange-500",
   [OrderStatus.DELIVERED]: "bg-gray-500",
   [OrderStatus.CANCELLED]: "bg-red-500",
+  [OrderStatus.REJECTED]: "bg-red-600",
 };
 
 export default function OrderDetailPage() {
@@ -30,6 +33,9 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [refundInfo, setRefundInfo] = useState<{ reason: string; amount: number } | null>(null);
+  const rejectionShownRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,32 +75,40 @@ export default function OrderDetailPage() {
       setOrder(updatedOrder);
     });
 
+    newSocket.on("order:rejected", (updatedOrder: Order) => {
+      setOrder(updatedOrder);
+      // Prevent multiple dialogs by checking if already shown
+      if (!rejectionShownRef.current) {
+        rejectionShownRef.current = true;
+        setRefundInfo({
+          reason: updatedOrder.cancelReason || "Order rejected by cook",
+          amount: updatedOrder.totalAmount
+        });
+        setRefundDialogOpen(true);
+      }
+    });
+
     setSocket(newSocket);
   };
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
-      alert("Please provide a cancellation reason");
+      toast.error("Please provide a cancellation reason");
       return;
     }
 
     try {
       const { data } = await orderApi.cancelOrder(orderId!, cancelReason);
       setOrder(data);
-      alert(
-        "Order cancelled successfully!\n\n" +
-        "✅ Refund has been initiated\n" +
-        "💰 Amount: ₹" + order?.totalAmount + "\n" +
-        "⏱️ Refund will be credited to your original payment method within 5-7 business days\n\n" +
-        "You can check the refund status in your Transaction History."
-      );
+      toast.success("Order cancelled successfully! Refund has been initiated.");
     } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to cancel order");
+      toast.error(error.response?.data?.error || "Failed to cancel order");
     }
   };
 
   const canCancel = () => {
     if (!order) return false;
+    if (order.status === OrderStatus.REJECTED) return false;
     if (![OrderStatus.PLACED, OrderStatus.CONFIRMED].includes(order.status)) return false;
     const timeSincePlaced = Date.now() - new Date(order.createdAt).getTime();
     return timeSincePlaced <= 15 * 60 * 1000;
@@ -122,7 +136,7 @@ export default function OrderDetailPage() {
           <Badge className={statusColors[order.status]}>{order.status}</Badge>
         </div>
 
-        {order.status !== OrderStatus.CANCELLED && (
+        {order.status !== OrderStatus.CANCELLED && order.status !== OrderStatus.REJECTED && (
           <div className="mb-8">
             <div className="flex justify-between items-center">
               {statusSteps.map((status, idx) => (
@@ -184,7 +198,9 @@ export default function OrderDetailPage() {
 
           {order.cancelReason && (
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2 text-red-600">Cancellation Reason</h3>
+              <h3 className="font-semibold mb-2 text-red-600">
+                {order.status === OrderStatus.REJECTED ? "Declined by Cook" : "Cancellation Reason"}
+              </h3>
               <p className="text-gray-600">{order.cancelReason}</p>
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">✅ Refund Initiated</h4>
@@ -217,6 +233,37 @@ export default function OrderDetailPage() {
           </p>
         </Card>
       )}
+
+      <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              ⚠️ Order Declined by Cook
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Your order has been declined by the cook.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p><strong>Reason:</strong> {refundInfo?.reason}</p>
+            </div>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">✅ Refund Initiated</h4>
+              <div className="text-sm text-blue-800 space-y-1">
+                <p>💰 Amount: ₹{refundInfo?.amount}</p>
+                <p>⏱️ Refund will be credited to your original payment method within 5-7 business days</p>
+                <p>📊 Check <a href="/transactions" className="underline font-medium">Transaction History</a> for refund status</p>
+              </div>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setRefundDialogOpen(false)}>
+              Understood
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
