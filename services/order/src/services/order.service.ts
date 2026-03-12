@@ -113,6 +113,33 @@ export class OrderService {
     order.status = newStatus;
     order.statusHistory.push({ status: newStatus, timestamp: new Date() });
     await order.save();
+
+    // Auto-create payment transaction when order is delivered
+    if (newStatus === OrderStatus.DELIVERED) {
+      try {
+        const axios = (await import("axios")).default;
+
+        // Resolve the cook's userId from the kitchen
+        const { data: kitchenResponse } = await kitchenClient.get(`/api/kitchens/${order.kitchenId}`);
+        const cookUserId = kitchenResponse.data?.cookId || order.kitchenId;
+        console.log(`🔍 Kitchen lookup: kitchenId=${order.kitchenId}, cookUserId=${cookUserId}, raw response keys=${JSON.stringify(Object.keys(kitchenResponse))}`);
+
+        await axios.post(
+          `http://localhost:5004/api/payments/auto-create`,
+          {
+            orderId: order.orderId,
+            userId: order.userId,
+            cookId: cookUserId,
+            amount: order.totalAmount
+          }
+        );
+        console.log(`✅ Payment transaction created for delivered order ${orderId}`);
+      } catch (error: any) {
+        console.log(`⚠️ Failed to create payment transaction: ${error.message}`);
+        // Don't fail the status update if payment creation fails
+      }
+    }
+
     return order;
   }
 

@@ -98,4 +98,20 @@ router.get("/history", authMiddleware, cookOnly, (req, res) =>
   payoutController.getPayoutHistory(req, res)
 );
 
+/**
+ * @swagger
+ * /api/payouts/earnings/breakdown:
+ *   get:
+ *     summary: Get earnings breakdown by daily, weekly, monthly
+ *     tags: [Payouts]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Earnings breakdown
+ */
+router.get("/earnings/breakdown", authMiddleware, cookOnly, (req, res) =>
+  payoutController.getEarningsBreakdown(req, res)
+);
+
 export default router;

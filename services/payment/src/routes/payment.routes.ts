@@ -109,4 +109,34 @@ router.get("/history", authMiddleware, (req, res) =>
   paymentController.getPaymentHistory(req, res)
 );
 
+/**
+ * @swagger
+ * /api/payments/auto-create:
+ *   post:
+ *     summary: Auto-create completed transaction for delivered orders
+ *     tags: [Payments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *               cookId:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Transaction created
+ */
+router.post("/auto-create", (req, res) => paymentController.autoCreateTransaction(req, res));
+
+// Temporary endpoint to fix existing transactions with wrong cookId (kitchenId instead of userId)
+router.post("/fix-cook-ids", (req, res) => paymentController.fixCookIds(req, res));
+
 export default router;

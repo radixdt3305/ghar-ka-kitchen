@@ -68,4 +68,15 @@ export class PayoutController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async getEarningsBreakdown(req: Request, res: Response) {
+    try {
+      const cookId = (req as any).user.userId;
+      const breakdown = await payoutService.getEarningsBreakdown(cookId);
+
+      res.json({ success: true, data: breakdown });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

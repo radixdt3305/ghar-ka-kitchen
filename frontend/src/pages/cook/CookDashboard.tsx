@@ -5,7 +5,7 @@ import { kitchenApi } from "@/api/kitchen.api";
 import type { Kitchen } from "@/types/kitchen.types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChefHat, Calendar, Clock, AlertCircle } from "lucide-react";
+import { ChefHat, Calendar, Clock, AlertCircle, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 
@@ -172,7 +172,7 @@ export function CookDashboard() {
 
       {/* Quick Actions */}
       {kitchen.status === "approved" && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link to="/cook/menu-create">
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <CardHeader>
@@ -210,6 +210,20 @@ export function CookDashboard() {
                 <CardTitle className="text-lg">Orders</CardTitle>
                 <p className="text-sm text-gray-500">
                   View and manage incoming orders
+                </p>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link to="/cook/earnings">
+            <Card className="cursor-pointer transition-shadow hover:shadow-md">
+              <CardHeader>
+                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-green-50">
+                  <DollarSign className="h-6 w-6 text-green-500" />
+                </div>
+                <CardTitle className="text-lg">Earnings</CardTitle>
+                <p className="text-sm text-gray-500">
+                  View your income and payouts
                 </p>
               </CardHeader>
             </Card>

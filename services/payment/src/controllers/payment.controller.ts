@@ -92,4 +92,29 @@ export class PaymentController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async fixCookIds(req: Request, res: Response) {
+    try {
+      const { kitchenToCookMap } = req.body;
+      if (!kitchenToCookMap || typeof kitchenToCookMap !== "object") {
+        return res.status(400).json({ success: false, message: "kitchenToCookMap required" });
+      }
+      const result = await paymentService.fixTransactionCookIds(kitchenToCookMap);
+      res.json({ success: true, data: result, message: `Fixed ${result.fixed} transactions` });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async autoCreateTransaction(req: Request, res: Response) {
+    try {
+      const { orderId, userId, cookId, amount } = req.body;
+      
+      const result = await paymentService.createCompletedTransaction(orderId, userId, cookId, amount);
+      
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

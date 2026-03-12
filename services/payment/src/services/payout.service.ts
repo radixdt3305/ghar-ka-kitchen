@@ -98,4 +98,82 @@ export class PayoutService {
   async getPayoutHistory(cookId: string) {
     return await Payout.find({ cookId }).sort({ createdAt: -1 });
   }
+
+  async getEarningsBreakdown(cookId: string) {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const twelveWeeksAgo = new Date(now.getTime() - 12 * 7 * 24 * 60 * 60 * 1000);
+    const twelveMonthsAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
+
+    // Daily breakdown (last 30 days)
+    const dailyData = await Transaction.aggregate([
+      {
+        $match: {
+          cookId,
+          status: "completed",
+          createdAt: { $gte: thirtyDaysAgo, $lte: now }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          amount: { $sum: "$amount" },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } }
+    ]);
+
+    // Weekly breakdown (last 12 weeks)
+    const weeklyData = await Transaction.aggregate([
+      {
+        $match: {
+          cookId,
+          status: "completed",
+          createdAt: { $gte: twelveWeeksAgo, $lte: now }
+        }
+      },
+      {
+        $group: {
+          _id: { 
+            year: { $year: "$createdAt" },
+            week: { $week: "$createdAt" }
+          },
+          amount: { $sum: "$amount" },
+          orders: { $sum: 1 },
+          weekStart: { $min: "$createdAt" }
+        }
+      },
+      { $sort: { "_id.year": -1, "_id.week": -1 } }
+    ]);
+
+    // Monthly breakdown (last 12 months)
+    const monthlyData = await Transaction.aggregate([
+      {
+        $match: {
+          cookId,
+          status: "completed",
+          createdAt: { $gte: twelveMonthsAgo, $lte: now }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          amount: { $sum: "$amount" },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: -1 } }
+    ]);
+
+    return {
+      daily: dailyData.map(d => ({ date: d._id, amount: d.amount, orders: d.orders })),
+      weekly: weeklyData.map(w => ({ 
+        week: w.weekStart.toISOString().split('T')[0], 
+        amount: w.amount, 
+        orders: w.orders 
+      })),
+      monthly: monthlyData.map(m => ({ month: m._id, amount: m.amount, orders: m.orders }))
+    };
+  }
 }

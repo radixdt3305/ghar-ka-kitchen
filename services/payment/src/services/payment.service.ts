@@ -62,4 +62,46 @@ export class PaymentService {
       { new: true }
     );
   }
+
+  async fixTransactionCookIds(kitchenToCookMap: Record<string, string>) {
+    let fixed = 0;
+    for (const [kitchenId, cookUserId] of Object.entries(kitchenToCookMap)) {
+      const result = await Transaction.updateMany(
+        { cookId: kitchenId },
+        { $set: { cookId: cookUserId } }
+      );
+      fixed += result.modifiedCount;
+    }
+    return { fixed };
+  }
+
+  async createCompletedTransaction(orderId: string, userId: string, cookId: string, amount: number) {
+    // Check if transaction already exists
+    const existingTransaction = await Transaction.findOne({ orderId });
+    if (existingTransaction) {
+      // Update cookId if it was stored incorrectly (e.g., kitchenId instead of userId)
+      if (existingTransaction.cookId !== cookId) {
+        existingTransaction.cookId = cookId;
+        existingTransaction.status = "completed";
+        await existingTransaction.save();
+      }
+      return existingTransaction;
+    }
+
+    const platformFee = Math.max(amount * env.PLATFORM_COMMISSION_RATE, env.MIN_COMMISSION);
+    const cookAmount = amount - platformFee;
+
+    const transaction = await Transaction.create({
+      orderId,
+      userId,
+      cookId,
+      amount,
+      platformFee,
+      cookAmount,
+      stripePaymentIntentId: `auto_${orderId}_${Date.now()}`, // Fake payment intent ID
+      status: "completed",
+    });
+
+    return transaction;
+  }
 }

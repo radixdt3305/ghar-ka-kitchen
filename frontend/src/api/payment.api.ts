@@ -39,6 +39,11 @@ export const payoutApi = {
     return data.data;
   },
 
+  getEarningsBreakdown: async () => {
+    const { data } = await apiClient.get("/payouts/earnings/breakdown");
+    return data.data;
+  },
+
   triggerPayout: async (periodStart: string, periodEnd: string) => {
     const { data } = await apiClient.post("/payouts/trigger", {
       periodStart,

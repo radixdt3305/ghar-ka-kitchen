@@ -3,13 +3,21 @@ import { payoutApi } from "../../api/payment.api";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
-import { Loader2, Wallet, TrendingUp, DollarSign, ExternalLink } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Loader2, Wallet, TrendingUp, DollarSign, ExternalLink, Calendar, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import type { Earnings, Payout } from "../../types/payment.types";
+
+interface EarningsBreakdown {
+  daily: { date: string; amount: number; orders: number }[];
+  weekly: { week: string; amount: number; orders: number }[];
+  monthly: { month: string; amount: number; orders: number }[];
+}
 
 export default function CookEarnings() {
   const [earnings, setEarnings] = useState<Earnings | null>(null);
   const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [earningsBreakdown, setEarningsBreakdown] = useState<EarningsBreakdown | null>(null);
   const [loading, setLoading] = useState(true);
   const [connectLoading, setConnectLoading] = useState(false);
 
@@ -19,12 +27,14 @@ export default function CookEarnings() {
 
   const fetchData = async () => {
     try {
-      const [earningsData, payoutsData] = await Promise.all([
+      const [earningsData, payoutsData, breakdownData] = await Promise.all([
         payoutApi.getEarnings(),
         payoutApi.getPayoutHistory(),
+        payoutApi.getEarningsBreakdown(),
       ]);
       setEarnings(earningsData);
       setPayouts(payoutsData);
+      setEarningsBreakdown(breakdownData);
     } catch (error) {
       toast.error("Failed to load earnings data");
     } finally {
@@ -126,6 +136,115 @@ export default function CookEarnings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Earnings Breakdown Tabs */}
+      <Tabs defaultValue="daily" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="daily">Daily</TabsTrigger>
+          <TabsTrigger value="weekly">Weekly</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="daily" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Daily Earnings (Last 30 Days)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {earningsBreakdown?.daily?.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No earnings data available</p>
+              ) : (
+                <div className="space-y-3">
+                  {earningsBreakdown?.daily?.slice(0, 10).map((day) => (
+                    <div key={day.date} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{new Date(day.date).toLocaleDateString('en-IN', { 
+                          weekday: 'short', 
+                          day: 'numeric', 
+                          month: 'short' 
+                        })}</p>
+                        <p className="text-sm text-muted-foreground">{day.orders} orders</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">₹{day.amount}</p>
+                        <p className="text-xs text-muted-foreground">₹{Math.round(day.amount * 0.85)} net</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="weekly" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Weekly Earnings (Last 12 Weeks)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {earningsBreakdown?.weekly?.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No earnings data available</p>
+              ) : (
+                <div className="space-y-3">
+                  {earningsBreakdown?.weekly?.map((week) => (
+                    <div key={week.week} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Week of {week.week}</p>
+                        <p className="text-sm text-muted-foreground">{week.orders} orders</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">₹{week.amount}</p>
+                        <p className="text-xs text-muted-foreground">₹{Math.round(week.amount * 0.85)} net</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="monthly" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Monthly Earnings (Last 12 Months)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {earningsBreakdown?.monthly?.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No earnings data available</p>
+              ) : (
+                <div className="space-y-3">
+                  {earningsBreakdown?.monthly?.map((month) => (
+                    <div key={month.month} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{new Date(month.month + '-01').toLocaleDateString('en-IN', { 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}</p>
+                        <p className="text-sm text-muted-foreground">{month.orders} orders</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600 text-lg">₹{month.amount}</p>
+                        <p className="text-sm text-muted-foreground">₹{Math.round(month.amount * 0.85)} net</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Payout History */}
       <Card>
