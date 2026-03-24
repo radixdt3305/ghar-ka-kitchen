@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { orderApi, type Order, OrderStatus } from "@/api/order.api";
 import { kitchenApi } from "@/api/kitchen.api";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Package, ChevronRight, X } from "lucide-react";
+import { Package, ChevronRight, X, Eye } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 
 const statusColors: Record<OrderStatus, string> = {
@@ -28,6 +29,7 @@ const NEXT_STATUS: Partial<Record<OrderStatus, { label: string; status: OrderSta
 };
 
 export function CookOrdersPage() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -203,7 +205,17 @@ export function CookOrdersPage() {
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <Badge className={statusColors[order.status]}>{order.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className={statusColors[order.status]}>{order.status}</Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => navigate(`/orders/${order.orderId}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="mb-4 space-y-1">

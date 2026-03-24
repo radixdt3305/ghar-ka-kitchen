@@ -140,6 +140,30 @@ export class OrderService {
       }
     }
 
+    // Fire notification (fire-and-forget)
+    try {
+      const axios = (await import("axios")).default;
+      const notifMap: Record<string, { title: string; body: string }> = {
+        [OrderStatus.CONFIRMED]:  { title: "Order Confirmed!", body: `Your order #${order.orderId} has been confirmed by the cook.` },
+        [OrderStatus.PREPARING]:  { title: "Order Being Prepared", body: `The cook has started preparing your order #${order.orderId}.` },
+        [OrderStatus.READY]:      { title: "Order Ready!", body: `Your order #${order.orderId} is ready for pickup/delivery.` },
+        [OrderStatus.DELIVERED]:  { title: "Order Delivered!", body: `Your order #${order.orderId} has been delivered. Enjoy your meal!` },
+      };
+      const notif = notifMap[newStatus];
+      if (notif) {
+        await axios.post("http://localhost:5006/api/notifications/send", {
+          userId: order.userId,
+          type: `order_${newStatus.toLowerCase()}`,
+          title: notif.title,
+          body: notif.body,
+          data: { orderId: order.orderId },
+          channels: ["push", "in_app"],
+        });
+      }
+    } catch {
+      // Don't fail status update if notification fails
+    }
+
     return order;
   }
 

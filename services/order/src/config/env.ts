@@ -7,4 +7,5 @@ export const env = {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET!,
   KITCHEN_SERVICE_URL: process.env.KITCHEN_SERVICE_URL!,
   AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL!,
+  NOTIFICATION_SERVICE_URL: process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5006",
 };

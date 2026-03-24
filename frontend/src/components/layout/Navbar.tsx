@@ -1,14 +1,16 @@
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Home, User, LogOut, UtensilsCrossed, ShoppingCart, Package } from "lucide-react";
+import { ChefHat, Home, User, LogOut, UtensilsCrossed, ShoppingCart, Package, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cartApi } from "@/api/cart.api";
+import { notificationApi } from "@/api/notification.api";
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [cartCount, setCartCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isCook = user?.role === "cook";
 
@@ -16,6 +18,10 @@ export function Navbar() {
     if (!isCook) {
       loadCartCount();
     }
+    loadUnreadCount();
+    // Poll unread count every 30 seconds
+    const interval = setInterval(loadUnreadCount, 10000);
+    return () => clearInterval(interval);
   }, [isCook]);
 
   const loadCartCount = async () => {
@@ -27,11 +33,21 @@ export function Navbar() {
     }
   };
 
+  const loadUnreadCount = async () => {
+    try {
+      const count = await notificationApi.getUnreadCount();
+      setUnreadCount(count);
+    } catch {
+      // silently fail
+    }
+  };
+
   // Expose refresh function globally
   useEffect(() => {
     if (!isCook) {
       (window as any).refreshCartCount = loadCartCount;
     }
+    (window as any).refreshUnreadCount = loadUnreadCount;
   }, [isCook]);
 
   const handleLogout = () => {
@@ -58,7 +74,7 @@ export function Navbar() {
               <span className="hidden sm:inline">{isCook ? "Dashboard" : "Home"}</span>
             </Button>
           </Link>
-          
+
           {isCook && (
             <Link to="/cook/orders">
               <Button variant="ghost" size="sm" className="gap-2">
@@ -89,7 +105,20 @@ export function Navbar() {
               </Link>
             </>
           )}
-          
+
+          {/* Notification Bell */}
+          <Link to="/notifications">
+            <Button variant="ghost" size="sm" className="gap-2 relative">
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+              <span className="hidden sm:inline">Alerts</span>
+            </Button>
+          </Link>
+
           <Link to="/profile">
             <Button variant="ghost" size="sm" className="gap-2">
               <User className="h-4 w-4" />

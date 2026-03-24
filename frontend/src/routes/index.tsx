@@ -17,6 +17,8 @@ import { MenuCreate } from "@/pages/cook/MenuCreate";
 import { MenuManagement } from "@/pages/cook/MenuManagement";
 import { CookOrdersPage } from "@/pages/cook/CookOrdersPage";
 import CookEarnings from "@/pages/cook/CookEarnings";
+import ReviewPage from "@/pages/ReviewPage";
+import NotificationsPage from "@/pages/NotificationsPage";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { GuestRoute } from "./GuestRoute";
@@ -47,6 +49,8 @@ export function AppRoutes() {
             <Route path="/cook/menu-management" element={<MenuManagement />} />
             <Route path="/cook/orders" element={<CookOrdersPage />} />
             <Route path="/cook/earnings" element={<CookEarnings />} />
+            <Route path="/review/:orderId" element={<ReviewPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
       </Routes>
